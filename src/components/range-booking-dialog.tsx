@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/auth-context";
 
 interface RangeBookingDialogProps {
   isOpen: boolean;
@@ -54,6 +56,8 @@ export function RangeBookingDialog({
     onBook 
 }: RangeBookingDialogProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -64,6 +68,16 @@ export function RangeBookingDialog({
       customerPhone: "",
     },
   });
+
+  const isUser = user?.role === 'user';
+
+  useEffect(() => {
+    if (isOpen && user && isUser) {
+      form.setValue('customerName', `${user.firstName} ${user.lastName}`);
+      form.setValue('customerPhone', user.phone);
+    }
+  }, [isOpen, user, form, isUser]);
+
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const { courtId, startTime, endTime, customerName, customerPhone } = values;
@@ -215,7 +229,7 @@ export function RangeBookingDialog({
                 <FormItem>
                   <FormLabel>Customer Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="John Doe" {...field} disabled={isUser} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -228,7 +242,7 @@ export function RangeBookingDialog({
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="555-555-5555" {...field} />
+                    <Input placeholder="555-555-5555" {...field} disabled={isUser} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

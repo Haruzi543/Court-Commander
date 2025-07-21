@@ -162,12 +162,10 @@ export function Dashboard() {
                    {!isAdmin && <CardDescription>Welcome, {user.firstName}! Select a slot to start.</CardDescription>}
                    {isAdmin && <CardDescription>Click an available time slot on the grid to book it.</CardDescription>}
                 </div>
-                {isAdmin && (
-                  <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
-                    <Clock className="mr-2" />
-                    Book by Range
-                  </Button>
-                )}
+                <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
+                  <Clock className="mr-2" />
+                  Book by Range
+                </Button>
               </CardHeader>
               <CardContent>
                 <CourtScheduleTable
@@ -210,27 +208,23 @@ export function Dashboard() {
         </Tabs>
       </main>
 
-        {isAdmin && (
-            <>
-                <SettingsDialog
-                    isOpen={isSettingsOpen}
-                    onClose={() => setIsSettingsOpen(false)}
-                    courts={courts}
-                    timeSlots={timeSlots}
-                    courtRates={courtRates}
-                    onSave={updateCourtSettings}
-                />
-                <RangeBookingDialog
-                    isOpen={isRangeBookingOpen}
-                    onClose={() => setIsRangeBookingOpen(false)}
-                    courts={courts}
-                    timeSlots={timeSlots}
-                    bookings={dailyBookings}
-                    selectedDate={formattedDate}
-                    onBook={addBooking}
-                />
-            </>
-        )}
+      <SettingsDialog
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        courts={courts}
+        timeSlots={timeSlots}
+        courtRates={courtRates}
+        onSave={updateCourtSettings}
+      />
+      <RangeBookingDialog
+          isOpen={isRangeBookingOpen}
+          onClose={() => setIsRangeBookingOpen(false)}
+          courts={courts}
+          timeSlots={timeSlots}
+          bookings={dailyBookings}
+          selectedDate={formattedDate}
+          onBook={addBooking}
+      />
     </div>
   );
 }
