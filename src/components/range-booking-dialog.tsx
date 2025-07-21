@@ -82,17 +82,17 @@ export function RangeBookingDialog({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const { courtId, startTime, endTime, customerName, customerPhone } = values;
 
-    const startIndex = timeSlots.findIndex(slot => slot.startsWith(startTime));
-    const endIndex = timeSlots.findIndex(slot => slot.endsWith(endTime));
-
-    if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+    if (startTime >= endTime) {
       toast({
         variant: "destructive",
         title: "Invalid Time Range",
-        description: "The selected start time must be before or the same as the end time.",
+        description: "The end time must be after the start time.",
       });
       return;
     }
+
+    const startIndex = timeSlots.findIndex(slot => slot.startsWith(startTime));
+    const endIndex = timeSlots.findIndex(slot => slot.endsWith(endTime));
     
     const selectedTimeSlots = timeSlots.slice(startIndex, endIndex + 1);
 
