@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ const formSchema = z.object({
 });
 
 export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, onBook }: BookingDialogProps) {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [countdown, setCountdown] = useState(60);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -53,6 +55,13 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
       customerPhone: "",
     },
   });
+
+  useEffect(() => {
+    if (isOpen && user && user.role === 'user') {
+      form.setValue('customerName', `${user.firstName} ${user.lastName}`);
+      form.setValue('customerPhone', user.phone);
+    }
+  }, [isOpen, user, form]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -99,6 +108,8 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
     onClose();
   };
 
+  const isUser = user?.role === 'user';
+
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -118,7 +129,7 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
                 <FormItem>
                   <FormLabel>Customer Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} disabled={showConfirm} />
+                    <Input placeholder="John Doe" {...field} disabled={showConfirm || isUser} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,7 +142,7 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="555-555-5555" {...field} disabled={showConfirm} />
+                    <Input placeholder="555-555-5555" {...field} disabled={showConfirm || isUser} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

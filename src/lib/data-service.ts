@@ -36,7 +36,15 @@ async function initializeDefaultData(existingBookings: Booking[], existingUsers:
         return acc;
     }, {} as CourtRate);
     
-    const adminUser: User = { id: "admin-user", email: "aekky@example.com", phone: "12345678", password: "55526477", role: "admin" };
+    const adminUser: User = { 
+        id: "admin-user", 
+        email: "aekky@example.com", 
+        phone: "12345678", 
+        password: "55526477", 
+        role: "admin",
+        firstName: "Admin",
+        lastName: "User"
+    };
     
     const users = [adminUser, ...existingUsers.filter(u => u.email !== 'aekky@example.com')];
 

@@ -64,7 +64,18 @@
       "email": "aekky@example.com",
       "phone": "12345678",
       "password": "55526477",
-      "role": "admin"
+      "role": "admin",
+      "firstName": "Admin",
+      "lastName": "User"
+    },
+    {
+      "email": "aekky.computer.cs@gmail.com",
+      "phone": "55526477",
+      "password": "95694208",
+      "role": "user",
+      "id": "2025-07-21T16:32:48.856Z0.7632498099437135",
+      "firstName": "Test",
+      "lastName": "User"
     }
   ]
 }
