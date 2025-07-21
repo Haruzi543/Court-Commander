@@ -103,6 +103,19 @@ export async function addUser(newUserData: NewUser): Promise<User> {
     return newUser;
 }
 
+export async function updateUserPassword(email: string, newPassword: string): Promise<User> {
+    const data = await readData();
+    const userIndex = data.users.findIndex(u => u.email === email);
+    if (userIndex === -1) {
+        throw new Error("User not found.");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    data.users[userIndex].password = hashedPassword;
+    await writeData(data);
+    return data.users[userIndex];
+}
+
 export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>): Promise<Booking> {
   const data = await readData();
 
