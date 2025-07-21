@@ -103,6 +103,26 @@ export async function addUser(newUserData: NewUser): Promise<User> {
     return newUser;
 }
 
+export async function updateUserProfile(
+  userId: string,
+  updates: { firstName: string; lastName: string; phone: string }
+): Promise<User> {
+  const data = await readData();
+  const userIndex = data.users.findIndex((u) => u.id === userId);
+
+  if (userIndex === -1) {
+    throw new Error("User not found.");
+  }
+
+  data.users[userIndex] = {
+    ...data.users[userIndex],
+    ...updates,
+  };
+
+  await writeData(data);
+  return data.users[userIndex];
+}
+
 export async function updateUserPassword(email: string, newPassword: string): Promise<User> {
     const data = await readData();
     const userIndex = data.users.findIndex(u => u.email === email);

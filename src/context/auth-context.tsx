@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createContext, useState, useContext, useEffect, ReactNode } from "react";
+import { createContext, useState, useContext, useEffect, ReactNode, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getUserByEmail } from "@/lib/data-service";
 import type { User } from "@/lib/types";
@@ -12,6 +12,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (updatedUser: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,8 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     router.push("/login");
   };
+  
+  const updateUser = useCallback((updatedUser: User) => {
+    sessionStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  }, []);
 
-  const value = { user, loading, login, logout };
+  const value = { user, loading, login, logout, updateUser };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

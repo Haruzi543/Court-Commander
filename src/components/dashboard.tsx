@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from "react";
 import { format, addDays, startOfToday } from "date-fns";
-import { Settings, Loader2, Calendar as CalendarIcon, Clock, LogOut, Ticket } from "lucide-react";
+import { Settings, Loader2, Calendar as CalendarIcon, Clock, LogOut, Ticket, User as UserIcon } from "lucide-react";
 import { useBookings } from "@/hooks/use-bookings";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -89,6 +89,12 @@ export function Dashboard() {
                     </Link>
                 </Button>
             )}
+             <Button variant="outline" size="icon" asChild>
+                <Link href="/profile">
+                    <UserIcon className="h-5 w-5" />
+                    <span className="sr-only">Profile</span>
+                </Link>
+             </Button>
             {isAdmin && (
               <Button variant="outline" size="icon" onClick={() => setIsSettingsOpen(true)}>
                 <Settings className="h-5 w-5" />
