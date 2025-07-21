@@ -1,68 +1,6 @@
 {
   "bookings": [
-    {
-      "courtId": 2,
-      "date": "2025-07-21",
-      "timeSlot": "09:00 - 10:00 & 10:00 - 11:00 & 11:00 - 12:00",
-      "customerName": "aekky",
-      "customerPhone": "95694208",
-      "id": "2025-07-21T15:52:05.377Z0.7314172420188039",
-      "status": "completed"
-    },
-    {
-      "courtId": 1,
-      "date": "2025-07-21",
-      "timeSlot": "09:00 - 10:00 & 10:00 - 11:00",
-      "customerName": "happy",
-      "customerPhone": "95694208",
-      "id": "2025-07-21T15:54:35.327Z0.6271945326079935",
-      "status": "completed"
-    },
-    {
-      "courtId": 2,
-      "date": "2025-07-21",
-      "timeSlot": "09:00 - 10:00 & 10:00 - 11:00",
-      "customerName": "aekoudone thebvongsa",
-      "customerPhone": "95694208",
-      "id": "2025-07-21T16:59:22.660Z0.15713083426276975",
-      "status": "booked"
-    },
-    {
-      "courtId": 2,
-      "date": "2025-07-22",
-      "timeSlot": "09:00 - 10:00 & 10:00 - 11:00",
-      "customerName": "aekoudone thebvongsa",
-      "customerPhone": "95694208",
-      "id": "2025-07-21T17:01:06.596Z0.11422195870287366",
-      "status": "completed"
-    },
-    {
-      "courtId": 2,
-      "date": "2025-07-22",
-      "timeSlot": "09:00 - 10:00 & 10:00 - 11:00",
-      "customerName": "aekoudone thebvongsa",
-      "customerPhone": "95694208",
-      "id": "2025-07-21T17:03:33.228Z0.530558768951394",
-      "status": "booked"
-    },
-    {
-      "courtId": 3,
-      "date": "2025-07-22",
-      "timeSlot": "09:00 - 10:00 & 10:00 - 11:00",
-      "customerName": "aekoudone thebvongsa",
-      "customerPhone": "95694208",
-      "id": "2025-07-21T17:19:24.912Z0.5921485807766895",
-      "status": "booked"
-    },
-    {
-      "courtId": 4,
-      "date": "2025-07-22",
-      "timeSlot": "09:00 - 10:00 & 10:00 - 11:00",
-      "customerName": "aekoudone thebvongsa",
-      "customerPhone": "95694208",
-      "id": "2025-07-21T17:19:45.562Z0.6545283284751169",
-      "status": "booked"
-    }
+ 
   ],
   "courts": [
     {
