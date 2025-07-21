@@ -67,6 +67,8 @@ export function Dashboard() {
       </div>
     );
   }
+  
+  const isAdmin = user.role === 'admin';
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -75,10 +77,10 @@ export function Dashboard() {
           <div className="flex items-center gap-3">
             <Logo className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold tracking-tight">Court Commander</h1>
-            <span className="text-sm text-muted-foreground mt-1">({user.email} - {user.role})</span>
+            {isAdmin && <span className="text-sm text-muted-foreground mt-1">({user.email} - {user.role})</span>}
           </div>
           <div className="flex items-center gap-2">
-            {user.role === 'admin' && (
+            {isAdmin && (
               <Button variant="outline" size="icon" onClick={() => setIsSettingsOpen(true)}>
                 <Settings className="h-5 w-5" />
                 <span className="sr-only">Settings</span>
@@ -95,13 +97,20 @@ export function Dashboard() {
       <main className="container mx-auto p-4 md:p-8">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <TabsList className={cn("grid w-full", user.role === 'admin' ? "grid-cols-5 md:w-[600px]" : "grid-cols-1")}>
-              {user.role === 'admin' && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
-              <TabsTrigger value="schedule">Schedule</TabsTrigger>
-              {user.role === 'admin' && <TabsTrigger value="arrivals">Arrivals</TabsTrigger>}
-              {user.role === 'admin' && <TabsTrigger value="payments">Payments</TabsTrigger>}
-              {user.role === 'admin' && <TabsTrigger value="history">History</TabsTrigger>}
-            </TabsList>
+            {isAdmin ? (
+               <TabsList className="grid w-full grid-cols-5 md:w-[600px]">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
+                <TabsTrigger value="payments">Payments</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
+            ) : (
+                <div className="flex-1">
+                    <h2 className="text-2xl font-semibold">Booking Schedule</h2>
+                    <p className="text-muted-foreground">Select a date and click an available time slot to book a court.</p>
+                </div>
+            )}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -126,22 +135,25 @@ export function Dashboard() {
               </PopoverContent>
             </Popover>
           </div>
-           <TabsContent value="dashboard">
-            <DashboardOverview 
-              bookings={dailyBookings} 
-              courts={courts}
-              courtRates={courtRates}
-              selectedDate={selectedDate}
-            />
-          </TabsContent>
+           {isAdmin && (
+            <TabsContent value="dashboard">
+                <DashboardOverview 
+                bookings={dailyBookings} 
+                courts={courts}
+                courtRates={courtRates}
+                selectedDate={selectedDate}
+                />
+            </TabsContent>
+           )}
           <TabsContent value="schedule">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Schedule for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
-                  <CardDescription>Click an available time slot on the grid to book it.</CardDescription>
+                   {!isAdmin && <CardDescription>Welcome, {user.firstName}! Select a slot to start.</CardDescription>}
+                   {isAdmin && <CardDescription>Click an available time slot on the grid to book it.</CardDescription>}
                 </div>
-                {user.role === 'admin' && (
+                {isAdmin && (
                   <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
                     <Clock className="mr-2" />
                     Book by Range
@@ -160,48 +172,55 @@ export function Dashboard() {
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="arrivals">
-            <ArrivalManagement
-              bookings={dailyBookings}
-              onUpdateBookingStatus={updateBookingStatus}
-            />
-          </TabsContent>
-           <TabsContent value="payments">
-            <PaymentManagement
-              bookings={dailyBookings}
-              courts={courts}
-              courtRates={courtRates}
-              onCompleteBooking={completeBooking}
-            />
-          </TabsContent>
-          <TabsContent value="history">
-            <HistoryManagement
-              bookings={bookings.filter(b => b.status === 'completed')}
-              courts={courts}
-              courtRates={courtRates}
-            />
-          </TabsContent>
+          {isAdmin && (
+            <>
+                <TabsContent value="arrivals">
+                    <ArrivalManagement
+                    bookings={dailyBookings}
+                    onUpdateBookingStatus={updateBookingStatus}
+                    />
+                </TabsContent>
+                <TabsContent value="payments">
+                    <PaymentManagement
+                    bookings={dailyBookings}
+                    courts={courts}
+                    courtRates={courtRates}
+                    onCompleteBooking={completeBooking}
+                    />
+                </TabsContent>
+                <TabsContent value="history">
+                    <HistoryManagement
+                    bookings={bookings.filter(b => b.status === 'completed')}
+                    courts={courts}
+                    courtRates={courtRates}
+                    />
+                </TabsContent>
+            </>
+          )}
         </Tabs>
       </main>
 
-      <SettingsDialog
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        courts={courts}
-        timeSlots={timeSlots}
-        courtRates={courtRates}
-        onSave={updateCourtSettings}
-      />
-      
-      <RangeBookingDialog
-        isOpen={isRangeBookingOpen}
-        onClose={() => setIsRangeBookingOpen(false)}
-        courts={courts}
-        timeSlots={timeSlots}
-        bookings={dailyBookings}
-        selectedDate={formattedDate}
-        onBook={addBooking}
-      />
+        {isAdmin && (
+            <>
+                <SettingsDialog
+                    isOpen={isSettingsOpen}
+                    onClose={() => setIsSettingsOpen(false)}
+                    courts={courts}
+                    timeSlots={timeSlots}
+                    courtRates={courtRates}
+                    onSave={updateCourtSettings}
+                />
+                <RangeBookingDialog
+                    isOpen={isRangeBookingOpen}
+                    onClose={() => setIsRangeBookingOpen(false)}
+                    courts={courts}
+                    timeSlots={timeSlots}
+                    bookings={dailyBookings}
+                    selectedDate={formattedDate}
+                    onBook={addBooking}
+                />
+            </>
+        )}
     </div>
   );
 }
