@@ -34,7 +34,7 @@ interface BookingDialogProps {
 
 const formSchema = z.object({
   customerName: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  customerPhone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  customerPhone: z.string().min(7, { message: "Please enter a valid phone number." }),
 });
 
 export function BookingDialog({ isOpen, onClose, court, timeSlot, onBook }: BookingDialogProps) {
