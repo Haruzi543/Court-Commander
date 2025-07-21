@@ -47,6 +47,15 @@
       "password": "$2a$10$pneT3pE5hUDETmr3De1.I.y0pAVo7yxlL8gJ3V8uk657pPyuqJjtW",
       "role": "admin",
       "id": "2025-07-21T19:14:22.370Z0.5363369751166858"
+    },
+    {
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "project.aekky.1@gmail.com",
+      "phone": "55526477",
+      "password": "$2a$10$LGpVH1LJk9lvf5ArDDkTO.Qkww1KVAXQ.6opLGPEWFYgzmoX/cgGS",
+      "role": "user",
+      "id": "2025-07-21T20:27:37.843Z0.6227903229285978"
     }
   ]
 }

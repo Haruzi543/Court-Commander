@@ -162,18 +162,16 @@ export function Dashboard() {
            )}
           <TabsContent value="schedule">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <CardTitle>Schedule for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
                    {!isAdmin && <CardDescription>Welcome, {user.firstName}! Select a slot to start.</CardDescription>}
                    {isAdmin && <CardDescription>Click an available time slot on the grid to book it.</CardDescription>}
                 </div>
-                {isAdmin && (
-                  <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
-                    <Clock className="mr-2" />
-                    Book by Range
-                  </Button>
-                )}
+                <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
+                  <Clock className="mr-2 h-4 w-4" />
+                  Book by Range
+                </Button>
               </CardHeader>
               <CardContent>
                 <CourtScheduleTable
