@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview This file configures and exports the Genkit AI instance.
  *
