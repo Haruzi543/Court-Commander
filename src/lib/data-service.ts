@@ -3,7 +3,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import type { Booking, Court, CourtRate, User, NewUser } from './types';
 import { DEFAULT_COURTS, DEFAULT_TIME_SLOTS, DEFAULT_HOURLY_RATE } from './constants';
 

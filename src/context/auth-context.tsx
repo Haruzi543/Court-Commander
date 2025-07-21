@@ -5,7 +5,7 @@ import { createContext, useState, useContext, useEffect, ReactNode } from "react
 import { useRouter } from "next/navigation";
 import { getUserByEmail } from "@/lib/data-service";
 import type { User } from "@/lib/types";
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 interface AuthContextType {
   user: User | null;
