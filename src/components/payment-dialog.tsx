@@ -19,17 +19,17 @@ interface PaymentDialogProps {
   booking: Booking;
   court: Court;
   rate: number;
-  onDeleteBooking: (bookingId: string) => void;
+  onCompleteBooking: (bookingId: string) => void;
 }
 
-export function PaymentDialog({ isOpen, onClose, booking, court, rate, onDeleteBooking }: PaymentDialogProps) {
+export function PaymentDialog({ isOpen, onClose, booking, court, rate, onCompleteBooking }: PaymentDialogProps) {
   const { toast } = useToast();
   
   const durationHours = booking.timeSlot.split(" & ").length;
   const totalCost = rate * durationHours;
 
   const handleConfirmPayment = () => {
-    onDeleteBooking(booking.id);
+    onCompleteBooking(booking.id);
     toast({
       title: "Payment Confirmed",
       description: `Booking for ${booking.customerName} has been paid and cleared.`,
@@ -38,10 +38,12 @@ export function PaymentDialog({ isOpen, onClose, booking, court, rate, onDeleteB
   };
   
   const handleCancelBooking = () => {
-    onDeleteBooking(booking.id);
+    // In a real app, you might want a different flow for cancellation
+    // For now, we'll just treat it as a completed (and perhaps unpaid) booking
+    onCompleteBooking(booking.id);
     toast({
       title: "Booking Cancelled",
-      description: `Booking for ${booking.customerName} has been cancelled.`,
+      description: `Booking for ${booking.customerName} has been cancelled and moved to history.`,
       variant: "destructive",
     });
     onClose();

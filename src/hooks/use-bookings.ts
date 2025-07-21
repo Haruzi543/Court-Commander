@@ -6,7 +6,7 @@ import type { Booking, CourtRate } from "@/lib/types";
 import { 
   addBooking as addBookingAction,
   updateBookingStatus as updateBookingStatusAction,
-  deleteBooking as deleteBookingAction,
+  completeBooking as completeBookingAction,
   updateCourtRates as updateCourtRatesAction,
   getData
 } from "@/lib/data-service";
@@ -35,7 +35,7 @@ export function useBookings() {
     });
   }, []);
 
-  const updateBookingStatus = useCallback((bookingId: string, status: "booked" | "arrived") => {
+  const updateBookingStatus = useCallback((bookingId: string, status: "booked" | "arrived" | "completed") => {
     startTransition(async () => {
       const updatedBooking = await updateBookingStatusAction(bookingId, status);
       setBookings((prev) =>
@@ -44,10 +44,12 @@ export function useBookings() {
     });
   }, []);
 
-  const deleteBooking = useCallback((bookingId: string) => {
+  const completeBooking = useCallback((bookingId: string) => {
     startTransition(async () => {
-      await deleteBookingAction(bookingId);
-      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+      const updatedBooking = await completeBookingAction(bookingId);
+      setBookings((prev) =>
+        prev.map((b) => (b.id === updatedBooking.id ? updatedBooking : b))
+      );
     });
   }, []);
   
@@ -64,7 +66,7 @@ export function useBookings() {
     isLoaded: isLoaded && !isPending,
     addBooking,
     updateBookingStatus,
-    deleteBooking,
+    completeBooking,
     updateCourtRates,
   };
 }

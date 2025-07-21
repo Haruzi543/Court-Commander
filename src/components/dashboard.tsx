@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { format, addDays, startOfToday } from "date-fns";
-import { Settings, Loader2, Calendar as CalendarIcon } from "lucide-react";
+import { Settings, Loader2, Calendar as CalendarIcon, History } from "lucide-react";
 import { useBookings } from "@/hooks/use-bookings";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,18 +11,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourtScheduleTable } from "@/components/court-schedule-table";
 import { ArrivalManagement } from "@/components/arrival-management";
 import { PaymentManagement } from "@/components/payment-management";
+import { HistoryManagement } from "@/components/history-management";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { Logo } from "@/components/icons";
 import { COURTS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export function Dashboard() {
-  const { bookings, courtRates, addBooking, updateBookingStatus, deleteBooking, updateCourtRates, isLoaded } = useBookings();
+  const { bookings, courtRates, addBooking, updateBookingStatus, completeBooking, updateCourtRates, isLoaded } = useBookings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState("schedule");
@@ -61,10 +62,11 @@ export function Dashboard() {
       <main className="container mx-auto p-4 md:p-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <TabsList className="grid w-full grid-cols-3 md:w-[400px]">
+            <TabsList className="grid w-full grid-cols-4 md:w-[500px]">
               <TabsTrigger value="schedule">Schedule</TabsTrigger>
               <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
               <TabsTrigger value="payments">Payments</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
             <Popover>
               <PopoverTrigger asChild>
@@ -97,11 +99,9 @@ export function Dashboard() {
               </CardHeader>
               <CardContent>
                 <CourtScheduleTable
-                  bookings={dailyBookings}
+                  bookings={dailyBookings.filter(b => b.status === 'booked' || b.status === 'arrived')}
                   courts={COURTS}
-                  courtRates={courtRates}
                   onBookSlot={addBooking}
-                  onDeleteBooking={deleteBooking}
                   selectedDate={formattedDate}
                   onNavigateToTab={setActiveTab}
                 />
@@ -119,7 +119,14 @@ export function Dashboard() {
               bookings={dailyBookings}
               courts={COURTS}
               courtRates={courtRates}
-              onDeleteBooking={deleteBooking}
+              onCompleteBooking={completeBooking}
+            />
+          </TabsContent>
+          <TabsContent value="history">
+            <HistoryManagement
+              bookings={bookings.filter(b => b.status === 'completed')}
+              courts={COURTS}
+              courtRates={courtRates}
             />
           </TabsContent>
         </Tabs>

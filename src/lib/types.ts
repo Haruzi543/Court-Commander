@@ -10,7 +10,7 @@ export interface Booking {
   timeSlot: string;
   customerName: string;
   customerPhone: string;
-  status: "booked" | "arrived";
+  status: "booked" | "arrived" | "completed";
 }
 
 export interface CourtRate {

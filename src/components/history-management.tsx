@@ -1,10 +1,9 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { Booking, Court, CourtRate } from "@/lib/types";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Table,
@@ -16,52 +15,48 @@ import {
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { PaymentDialog } from "./payment-dialog";
+import { format } from "date-fns";
 
-interface PaymentManagementProps {
+interface HistoryManagementProps {
   bookings: Booking[];
   courts: Court[];
   courtRates: CourtRate;
-  onCompleteBooking: (bookingId: string) => void;
 }
 
-export function PaymentManagement({ bookings, courts, courtRates, onCompleteBooking }: PaymentManagementProps) {
+export function HistoryManagement({ bookings, courts, courtRates }: HistoryManagementProps) {
   const [searchTerm, setSearchTerm] = useDebounce("", 300);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  const bookingsForPayment = useMemo(() => {
+  const completedBookings = useMemo(() => {
     return bookings
-      .filter((b) => b.status === "arrived")
+      .filter((b) => b.status === "completed")
       .filter(
         (b) =>
           b.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          b.customerPhone.includes(searchTerm)
+          b.customerPhone.includes(searchTerm) ||
+          b.date.includes(searchTerm)
       )
-      .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
+      .sort((a, b) => b.date.localeCompare(a.date) || b.timeSlot.localeCompare(a.timeSlot));
   }, [bookings, searchTerm]);
-  
-  const handleOpenPaymentDialog = (booking: Booking) => {
-    setSelectedBooking(booking);
-  };
-  
-  const handleClosePaymentDialog = () => {
-    setSelectedBooking(null);
-  };
 
   const getCourtById = (courtId: number) => {
     return courts.find(c => c.id === courtId);
   }
 
+  const calculateCost = (booking: Booking) => {
+    const rate = courtRates[booking.courtId] || 0;
+    const duration = booking.timeSlot.split(" & ").length;
+    return (rate * duration).toFixed(2);
+  };
+
   return (
-    <>
     <Card>
       <CardHeader>
-        <CardTitle>Process Payments</CardTitle>
-        <CardDescription>Search for arrived customers on the selected date to process payments.</CardDescription>
+        <CardTitle>Booking History</CardTitle>
+        <CardDescription>View all past bookings and payments.</CardDescription>
         <div className="relative pt-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name or phone..."
+            placeholder="Search by name, phone, or date (YYYY-MM-DD)..."
             defaultValue={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9"
@@ -73,30 +68,30 @@ export function PaymentManagement({ bookings, courts, courtRates, onCompleteBook
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Date</TableHead>
                 <TableHead>Time Slot</TableHead>
                 <TableHead>Court</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                <TableHead className="text-right">Amount Paid</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bookingsForPayment.length > 0 ? (
-                bookingsForPayment.map((booking) => (
+              {completedBookings.length > 0 ? (
+                completedBookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.timeSlot}</TableCell>
+                    <TableCell className="font-medium">{format(new Date(booking.date), "PPP")}</TableCell>
+                    <TableCell>{booking.timeSlot}</TableCell>
                     <TableCell>{getCourtById(booking.courtId)?.name}</TableCell>
                     <TableCell>{booking.customerName}</TableCell>
                     <TableCell>{booking.customerPhone}</TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" onClick={() => handleOpenPaymentDialog(booking)}>Process Payment</Button>
-                    </TableCell>
+                    <TableCell className="text-right font-mono">${calculateCost(booking)}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    No customers waiting for payment.
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    No completed bookings found.
                   </TableCell>
                 </TableRow>
               )}
@@ -105,16 +100,5 @@ export function PaymentManagement({ bookings, courts, courtRates, onCompleteBook
         </div>
       </CardContent>
     </Card>
-    {selectedBooking && getCourtById(selectedBooking.courtId) && (
-        <PaymentDialog
-          isOpen={!!selectedBooking}
-          onClose={handleClosePaymentDialog}
-          booking={selectedBooking}
-          court={getCourtById(selectedBooking.courtId)!}
-          rate={courtRates[selectedBooking.courtId]}
-          onCompleteBooking={onCompleteBooking}
-        />
-      )}
-    </>
   );
 }

@@ -18,7 +18,6 @@ async function readData(): Promise<DbData> {
     const fileContent = await fs.readFile(dataFilePath, 'utf-8');
     return JSON.parse(fileContent) as DbData;
   } catch (error) {
-    // If file doesn't exist, create it with default data
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
       const defaultRates = COURTS.reduce((acc, court) => {
           acc[court.id] = DEFAULT_HOURLY_RATE;
@@ -54,7 +53,7 @@ export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>)
   const data = await readData();
   const newBooking: Booking = {
     ...newBookingData,
-    id: new Date().toISOString() + Math.random(), // more unique id
+    id: new Date().toISOString() + Math.random(),
     status: 'booked',
   };
   data.bookings.push(newBooking);
@@ -62,7 +61,7 @@ export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>)
   return newBooking;
 }
 
-export async function updateBookingStatus(bookingId: string, status: 'booked' | 'arrived'): Promise<Booking> {
+export async function updateBookingStatus(bookingId: string, status: Booking['status']): Promise<Booking> {
   const data = await readData();
   const bookingIndex = data.bookings.findIndex(b => b.id === bookingId);
   if (bookingIndex === -1) {
@@ -71,6 +70,17 @@ export async function updateBookingStatus(bookingId: string, status: 'booked' | 
   data.bookings[bookingIndex].status = status;
   await writeData(data);
   return data.bookings[bookingIndex];
+}
+
+export async function completeBooking(bookingId: string): Promise<Booking> {
+    const data = await readData();
+    const bookingIndex = data.bookings.findIndex(b => b.id === bookingId);
+    if (bookingIndex === -1) {
+      throw new Error("Booking not found");
+    }
+    data.bookings[bookingIndex].status = 'completed';
+    await writeData(data);
+    return data.bookings[bookingIndex];
 }
 
 export async function deleteBooking(bookingId: string): Promise<{ success: true }> {

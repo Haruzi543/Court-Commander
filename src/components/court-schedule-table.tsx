@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Booking, Court, CourtRate } from "@/lib/types";
+import type { Booking, Court } from "@/lib/types";
 import { TIME_SLOTS } from "@/lib/constants";
 import {
   Table,
@@ -19,11 +19,9 @@ import { cn } from "@/lib/utils";
 interface CourtScheduleTableProps {
   bookings: Booking[];
   courts: Court[];
-  courtRates: CourtRate;
   onBookSlot: (booking: Omit<Booking, "id" | "status">) => void;
-  onDeleteBooking: (bookingId: string) => void;
   selectedDate: string;
-  onNavigateToTab: (tab: "arrivals" | "payments") => void;
+  onNavigateToTab: (tab: "arrivals" | "payments" | "history" | "schedule") => void;
 }
 
 export function CourtScheduleTable({
