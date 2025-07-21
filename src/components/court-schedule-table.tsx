@@ -17,7 +17,7 @@ import { BookingDialog } from "./booking-dialog";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { TennisBall } from "lucide-react";
+import { Book } from "lucide-react";
 
 interface CourtScheduleTableProps {
   bookings: Booking[];
@@ -230,7 +230,7 @@ export function CourtScheduleTable({
                 <AccordionItem value={`court-${court.id}`} key={court.id}>
                     <AccordionTrigger className="text-lg font-semibold">
                        <div className="flex items-center gap-3">
-                         <TennisBall className="text-primary"/> 
+                         <Book className="text-primary"/> 
                          {court.name}
                        </div>
                     </AccordionTrigger>
