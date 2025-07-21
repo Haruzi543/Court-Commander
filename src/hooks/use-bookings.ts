@@ -9,6 +9,7 @@ import {
   updateCourtSettings as updateCourtSettingsAction,
   getData
 } from "@/lib/data-service";
+import { useToast } from "./use-toast";
 
 export function useBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -17,6 +18,7 @@ export function useBookings() {
   const [courtRates, setCourtRates] = useState<CourtRate>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const loadData = useCallback(async () => {
     const { bookings, courts, timeSlots, courtRates } = await getData();
@@ -33,10 +35,20 @@ export function useBookings() {
 
   const addBooking = useCallback((booking: Omit<Booking, "id" | "status">) => {
     startTransition(async () => {
-      const newBooking = await addBookingAction(booking);
-      setBookings((prev) => [...prev, newBooking]);
+      try {
+        const newBooking = await addBookingAction(booking);
+        setBookings((prev) => [...prev, newBooking]);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Booking Failed",
+          description: (error as Error).message,
+        });
+        // Re-sync client state with server state on failure
+        await loadData();
+      }
     });
-  }, []);
+  }, [toast, loadData]);
 
   const updateBookingStatus = useCallback((bookingId: string, status: "booked" | "arrived") => {
     startTransition(async () => {

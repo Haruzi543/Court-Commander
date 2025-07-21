@@ -96,6 +96,22 @@ export async function addUser(newUserData: NewUser): Promise<User> {
 
 export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>): Promise<Booking> {
   const data = await readData();
+
+  // Check for conflicts before adding the new booking
+  const newBookingSlots = newBookingData.timeSlot.split(" & ");
+  const isConflict = data.bookings.some(booking => {
+    if (booking.courtId !== newBookingData.courtId || booking.date !== newBookingData.date) {
+      return false; // Not the same court or date, no conflict
+    }
+    // Booking is for the same court on the same day, check for time overlap
+    const existingBookingSlots = booking.timeSlot.split(" & ");
+    return newBookingSlots.some(newSlot => existingBookingSlots.includes(newSlot));
+  });
+
+  if (isConflict) {
+    throw new Error("This time slot is no longer available. Please select another time.");
+  }
+
   const newBooking: Booking = {
     ...newBookingData,
     id: new Date().toISOString() + Math.random(),
