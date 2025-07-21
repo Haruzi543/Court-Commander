@@ -55,19 +55,21 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
       customerPhone: "",
     },
   });
+  
+  const isUser = user?.role === 'user';
 
   useEffect(() => {
     if (isOpen && user) {
-      form.setValue('customerName', user.role === 'admin' ? '' : `${user.firstName} ${user.lastName}`);
-      form.setValue('customerPhone', user.role === 'admin' ? '' : user.phone);
+      form.setValue('customerName', isUser ? `${user.firstName} ${user.lastName}` : '');
+      form.setValue('customerPhone', isUser ? user.phone : '');
     }
-  }, [isOpen, user, form]);
+  }, [isOpen, user, form, isUser]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (showConfirm && countdown > 0) {
+    if (showConfirm && countdown > 0 && isUser) {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    } else if (showConfirm && countdown === 0) {
+    } else if (showConfirm && countdown === 0 && isUser) {
       handleClose();
       toast({
         variant: "destructive",
@@ -76,39 +78,37 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
       });
     }
     return () => clearTimeout(timer);
-  }, [showConfirm, countdown]);
+  }, [showConfirm, countdown, isUser]);
 
-  const handleInitialSubmit = () => {
-    form.trigger().then(isValid => {
-      if(isValid) {
-        setShowConfirm(true);
-        setCountdown(60);
-      }
-    });
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    if (isUser && !showConfirm) {
+      form.trigger().then(isValid => {
+        if (isValid) {
+          setShowConfirm(true);
+          setCountdown(60);
+        }
+      });
+    } else {
+      onBook({
+        courtId: court.id,
+        date: selectedDate,
+        timeSlot,
+        ...values,
+      });
+      toast({
+        title: "Booking Confirmed!",
+        description: `${court.name} at ${timeSlot} has been booked for ${values.customerName}.`,
+      });
+      handleClose();
+    }
   };
-
-  const onConfirmSubmit = (values: z.infer<typeof formSchema>) => {
-    onBook({
-      courtId: court.id,
-      date: selectedDate,
-      timeSlot,
-      ...values,
-    });
-    toast({
-      title: "Booking Confirmed!",
-      description: `${court.name} at ${timeSlot} has been booked for ${values.customerName}.`,
-    });
-    handleClose();
-  };
-
+  
   const handleClose = () => {
     form.reset();
     setShowConfirm(false);
     setCountdown(60);
     onClose();
   };
-  
-  const isUser = user?.role === 'user';
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -120,7 +120,7 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onConfirmSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
             <FormField
               control={form.control}
               name="customerName"
@@ -148,13 +148,13 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
               )}
             />
             <DialogFooter>
-              {showConfirm ? (
+              {isUser && showConfirm ? (
                 <Button type="submit" className="w-full">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Confirm Booking ({countdown}s)
                 </Button>
               ) : (
-                <Button type="button" onClick={handleInitialSubmit}>
+                <Button type="submit">
                   Book
                 </Button>
               )}
