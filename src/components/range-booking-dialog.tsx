@@ -68,8 +68,8 @@ export function RangeBookingDialog({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const { courtId, startTime, endTime, customerName, customerPhone } = values;
 
-    const startIndex = timeSlots.findIndex(slot => slot.split(' - ')[0] === startTime);
-    const endIndex = timeSlots.findIndex(slot => slot.split(' - ')[1] === endTime);
+    const startIndex = timeSlots.findIndex(slot => slot.startsWith(startTime));
+    const endIndex = timeSlots.findIndex(slot => slot.endsWith(endTime));
 
     if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
       toast({
