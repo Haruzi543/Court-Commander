@@ -1,3 +1,4 @@
+
 export interface Court {
   id: number;
   name: string;
@@ -16,3 +17,12 @@ export interface Booking {
 export interface CourtRate {
   [courtId: number]: number;
 }
+
+export interface User {
+  id: string;
+  username: string;
+  password: string;
+  role: "admin" | "user";
+}
+
+export type NewUser = Omit<User, 'id'>;

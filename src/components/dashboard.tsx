@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
 import { format, addDays, startOfToday } from "date-fns";
-import { Settings, Loader2, Calendar as CalendarIcon, Clock } from "lucide-react";
+import { Settings, Loader2, Calendar as CalendarIcon, Clock, LogOut } from "lucide-react";
 import { useBookings } from "@/hooks/use-bookings";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,7 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourtScheduleTable } from "@/components/court-schedule-table";
 import { ArrivalManagement } from "@/components/arrival-management";
 import { PaymentManagement } from "@/components/payment-management";
@@ -22,8 +23,10 @@ import { RangeBookingDialog } from "@/components/range-booking-dialog";
 import { Logo } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { DashboardOverview } from "./dashboard-overview";
+import { useAuth } from "@/context/auth-context";
 
 export function Dashboard() {
+  const { user, logout } = useAuth();
   const { 
     bookings, 
     courts, 
@@ -38,7 +41,9 @@ export function Dashboard() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRangeBookingOpen, setIsRangeBookingOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [activeTab, setActiveTab] = useState("schedule");
+  
+  const initialTab = user?.role === 'admin' ? "dashboard" : "schedule";
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
@@ -48,7 +53,14 @@ export function Dashboard() {
   
   const today = startOfToday();
 
-  if (!isLoaded) {
+  const handleTabChange = (tab: string) => {
+    if (user?.role !== 'admin' && tab !== 'schedule') {
+      return;
+    }
+    setActiveTab(tab);
+  };
+
+  if (!isLoaded || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -63,23 +75,32 @@ export function Dashboard() {
           <div className="flex items-center gap-3">
             <Logo className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold tracking-tight">Court Commander</h1>
+            <span className="text-sm text-muted-foreground mt-1">({user.username} - {user.role})</span>
           </div>
-          <Button variant="outline" size="icon" onClick={() => setIsSettingsOpen(true)}>
-            <Settings className="h-5 w-5" />
-            <span className="sr-only">Settings</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            {user.role === 'admin' && (
+              <Button variant="outline" size="icon" onClick={() => setIsSettingsOpen(true)}>
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Settings</span>
+              </Button>
+            )}
+            <Button variant="outline" size="icon" onClick={logout}>
+                <LogOut className="h-5 w-5" />
+                <span className="sr-only">Log Out</span>
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="container mx-auto p-4 md:p-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <TabsList className="grid w-full grid-cols-5 md:w-[600px]">
-              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsList className={cn("grid w-full", user.role === 'admin' ? "grid-cols-5 md:w-[600px]" : "grid-cols-1")}>
+              {user.role === 'admin' && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
               <TabsTrigger value="schedule">Schedule</TabsTrigger>
-              <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
-              <TabsTrigger value="payments">Payments</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              {user.role === 'admin' && <TabsTrigger value="arrivals">Arrivals</TabsTrigger>}
+              {user.role === 'admin' && <TabsTrigger value="payments">Payments</TabsTrigger>}
+              {user.role === 'admin' && <TabsTrigger value="history">History</TabsTrigger>}
             </TabsList>
             <Popover>
               <PopoverTrigger asChild>
@@ -120,10 +141,12 @@ export function Dashboard() {
                   <CardTitle>Schedule for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
                   <CardDescription>Click an available time slot on the grid to book it.</CardDescription>
                 </div>
-                <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
-                  <Clock className="mr-2" />
-                  Book by Range
-                </Button>
+                {user.role === 'admin' && (
+                  <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
+                    <Clock className="mr-2" />
+                    Book by Range
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
                 <CourtScheduleTable

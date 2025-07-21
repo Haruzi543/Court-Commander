@@ -1,0 +1,96 @@
+
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { addUser } from "@/lib/data-service";
+import { Logo } from "@/components/icons";
+
+export default function SignupPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const { login } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await addUser({ username, password, role: "user" });
+      await login(username, password);
+      toast({
+        title: "Account Created",
+        description: "You have been logged in successfully.",
+      });
+      router.push("/");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: (error as Error).message,
+      });
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <Card className="w-full max-w-sm">
+      <CardHeader className="text-center">
+            <div className="flex justify-center items-center gap-3 mb-2">
+               <Logo className="h-10 w-10 text-primary" />
+               <CardTitle className="text-3xl">Court Commander</CardTitle>
+            </div>
+          <CardDescription>Create a new account to book courts</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSignup}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full">
+              Sign Up
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Already have an account?{" "}
+              <Link href="/login" className="underline hover:text-primary">
+                Login
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  );
+}

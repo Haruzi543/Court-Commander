@@ -1,8 +1,9 @@
+
 'use server';
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { Booking, Court, CourtRate } from './types';
+import type { Booking, Court, CourtRate, User, NewUser } from './types';
 import { DEFAULT_COURTS, DEFAULT_TIME_SLOTS, DEFAULT_HOURLY_RATE } from './constants';
 
 const dataFilePath = path.join(process.cwd(), 'data/db.json');
@@ -12,6 +13,7 @@ interface DbData {
   courts: Court[];
   timeSlots: string[];
   courtRates: CourtRate;
+  users: User[];
 }
 
 async function readData(): Promise<DbData> {
@@ -19,26 +21,31 @@ async function readData(): Promise<DbData> {
     await fs.access(dataFilePath);
     const fileContent = await fs.readFile(dataFilePath, 'utf-8');
     const data = JSON.parse(fileContent) as DbData;
-    if (!data.courts || !data.timeSlots || !data.courtRates || !data.bookings) {
-        return await initializeDefaultData(data.bookings || []);
+    if (!data.courts || !data.timeSlots || !data.courtRates || !data.bookings || !data.users) {
+        return await initializeDefaultData(data.bookings || [], data.users || []);
     }
     return data;
   } catch (error) {
-    return await initializeDefaultData([]);
+    return await initializeDefaultData([], []);
   }
 }
 
-async function initializeDefaultData(existingBookings: Booking[]): Promise<DbData> {
+async function initializeDefaultData(existingBookings: Booking[], existingUsers: User[]): Promise<DbData> {
     const defaultRates = DEFAULT_COURTS.reduce((acc, court) => {
         acc[court.id] = DEFAULT_HOURLY_RATE;
         return acc;
     }, {} as CourtRate);
     
+    const adminUser: User = { id: "admin-user", username: "aekky", password: "55526477", role: "admin" };
+    
+    const users = [adminUser, ...existingUsers.filter(u => u.username !== 'aekky')];
+
     const defaultData: DbData = {
       bookings: existingBookings,
       courts: DEFAULT_COURTS,
       timeSlots: DEFAULT_TIME_SLOTS,
       courtRates: defaultRates,
+      users: users,
     };
     await writeData(defaultData);
     return defaultData;
@@ -58,6 +65,25 @@ async function writeData(data: DbData): Promise<void> {
 
 export async function getData() {
   return await readData();
+}
+
+export async function getUser(username: string): Promise<User | undefined> {
+    const data = await readData();
+    return data.users.find(u => u.username === username);
+}
+
+export async function addUser(newUserData: NewUser): Promise<User> {
+    const data = await readData();
+    if (data.users.some(u => u.username === newUserData.username)) {
+        throw new Error("Username already exists.");
+    }
+    const newUser: User = {
+        ...newUserData,
+        id: new Date().toISOString() + Math.random(),
+    };
+    data.users.push(newUser);
+    await writeData(data);
+    return newUser;
 }
 
 export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>): Promise<Booking> {

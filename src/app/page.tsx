@@ -1,13 +1,12 @@
 "use client";
 
 import { Dashboard } from "@/components/dashboard";
-import { Toaster } from "@/components/ui/toaster";
+import { ProtectedRoute } from "@/components/protected-route";
 
 export default function Home() {
   return (
-    <>
+    <ProtectedRoute>
       <Dashboard />
-      <Toaster />
-    </>
+    </ProtectedRoute>
   );
 }

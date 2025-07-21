@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -23,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -40,6 +43,9 @@ const formSchema = z.object({
 
 export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, onBook }: BookingDialogProps) {
   const { toast } = useToast();
+  const [countdown, setCountdown] = useState(60);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,7 +54,31 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showConfirm && countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    } else if (showConfirm && countdown === 0) {
+      handleClose();
+      toast({
+        variant: "destructive",
+        title: "Booking timed out",
+        description: "You did not confirm the booking in time.",
+      });
+    }
+    return () => clearTimeout(timer);
+  }, [showConfirm, countdown]);
+
+  const handleInitialSubmit = () => {
+    form.trigger().then(isValid => {
+      if(isValid) {
+        setShowConfirm(true);
+        setCountdown(60);
+      }
+    });
+  };
+
+  const onConfirmSubmit = (values: z.infer<typeof formSchema>) => {
     onBook({
       courtId: court.id,
       date: selectedDate,
@@ -59,12 +89,19 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
       title: "Booking Confirmed!",
       description: `${court.name} at ${timeSlot} has been booked for ${values.customerName}.`,
     });
+    handleClose();
+  };
+
+  const handleClose = () => {
     form.reset();
+    setShowConfirm(false);
+    setCountdown(60);
     onClose();
   };
 
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Book Court</DialogTitle>
@@ -73,7 +110,7 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onConfirmSubmit)} className="space-y-4 py-4">
             <FormField
               control={form.control}
               name="customerName"
@@ -81,7 +118,7 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
                 <FormItem>
                   <FormLabel>Customer Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="John Doe" {...field} disabled={showConfirm} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,14 +131,23 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="555-555-5555" {...field} />
+                    <Input placeholder="555-555-5555" {...field} disabled={showConfirm} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="submit">Confirm Booking</Button>
+              {showConfirm ? (
+                <Button type="submit" className="w-full">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Confirm Booking ({countdown}s)
+                </Button>
+              ) : (
+                <Button type="button" onClick={handleInitialSubmit}>
+                  Book
+                </Button>
+              )}
             </DialogFooter>
           </form>
         </Form>
