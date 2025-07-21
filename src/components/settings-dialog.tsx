@@ -138,7 +138,7 @@ export function SettingsDialog({ isOpen, onClose, courts, timeSlots, courtRates,
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -157,13 +157,13 @@ export function SettingsDialog({ isOpen, onClose, courts, timeSlots, courtRates,
                       onChange={(e) => handleCourtNameChange(court.id, e.target.value)}
                       className="flex-grow"
                     />
-                    <div className="relative w-24">
+                    <div className="relative w-32">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₭</span>
                       <Input
                         type="number"
                         value={localRates[court.id] || ''}
                         onChange={(e) => handleRateChange(court.id, e.target.value)}
-                        className="pl-6"
+                        className="pl-8"
                       />
                     </div>
                      <Button variant="ghost" size="icon" onClick={() => handleRemoveCourt(court.id)}>
