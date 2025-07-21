@@ -2,14 +2,13 @@
 'use server';
 
 /**
- * @fileOverview An AI flow to generate and send an OTP via email.
+ * @fileOverview A flow to generate and send an OTP via email.
  *
  * - sendOtp - A function that generates an OTP and sends it using nodemailer.
  * - SendOtpInput - The input type for the sendOtp function.
  * - SendOtpOutput - The return type for the sendOtp function.
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
 
@@ -26,41 +25,25 @@ const SendOtpOutputSchema = z.object({
 export type SendOtpOutput = z.infer<typeof SendOtpOutputSchema>;
 
 export async function sendOtp(input: SendOtpInput): Promise<SendOtpOutput> {
-  return sendOtpFlow(input);
-}
-
-const otpPrompt = ai.definePrompt({
-    name: 'otpPrompt',
-    input: {
-        schema: z.object({ name: z.string(), otp: z.string() }),
-    },
-    prompt: `You are a helpful assistant for a badminton court booking app called Court Commander.
-    
-    A user named {{name}} has requested to sign up. 
-    
-    Write a brief, friendly, and professional email body containing their One-Time Password (OTP).
-    
-    The OTP is: {{otp}}
-    
-    Keep the email concise and clear. Mention that the OTP is for their Court Commander account registration.`,
-});
-
-
-const sendOtpFlow = ai.defineFlow(
-  {
-    name: 'sendOtpFlow',
-    inputSchema: SendOtpInputSchema,
-    outputSchema: SendOtpOutputSchema,
-  },
-  async (input) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const { text: emailBody } = await otpPrompt({
-        input: {
-            name: input.name,
-            otp: otp
-        }
-    });
+    const emailBody = `Hello ${input.name},
+
+Thank you for signing up for Court Commander.
+
+Your One-Time Password (OTP) is: ${otp}
+
+Please use this code to complete your registration.
+
+Regards,
+The Court Commander Team`;
+
+    const emailHtml = `<p>Hello ${input.name},</p>
+<p>Thank you for signing up for Court Commander.</p>
+<p>Your One-Time Password (OTP) is: <strong>${otp}</strong></p>
+<p>Please use this code to complete your registration.</p>
+<p>Regards,<br/>The Court Commander Team</p>`;
+
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -75,7 +58,7 @@ const sendOtpFlow = ai.defineFlow(
         to: input.email,
         subject: 'Your Court Commander OTP Code',
         text: emailBody,
-        html: `<p>${emailBody.replace(/\n/g, '<br>')}</p>`,
+        html: emailHtml,
     };
     
     const info = await transporter.sendMail(mailOptions);
@@ -84,5 +67,4 @@ const sendOtpFlow = ai.defineFlow(
       otp: otp,
       messageId: info.messageId,
     };
-  }
-);
+}
