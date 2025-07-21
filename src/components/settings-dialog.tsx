@@ -28,6 +28,8 @@ interface SettingsDialogProps {
   onSave: (settings: {courts: Court[], timeSlots: string[], rates: CourtRate}) => void;
 }
 
+const timeSlotRegex = /^\d{2}:\d{2} - \d{2}:\d{2}$/;
+
 export function SettingsDialog({ isOpen, onClose, courts, timeSlots, courtRates, onSave }: SettingsDialogProps) {
   const [localCourts, setLocalCourts] = useState<Court[]>([]);
   const [localTimeSlots, setLocalTimeSlots] = useState<string[]>([]);
@@ -66,10 +68,15 @@ export function SettingsDialog({ isOpen, onClose, courts, timeSlots, courtRates,
     delete newRates[courtId];
     setLocalRates(newRates);
   }
+
+  const handleTimeSlotChange = (index: number, newValue: string) => {
+    const updatedSlots = [...localTimeSlots];
+    updatedSlots[index] = newValue;
+    setLocalTimeSlots(updatedSlots);
+  }
   
   const handleAddNewTimeSlot = () => {
-    // Basic validation: HH:MM - HH:MM
-    if (/^\d{2}:\d{2} - \d{2}:\d{2}$/.test(newTimeSlot) && !localTimeSlots.includes(newTimeSlot)) {
+    if (timeSlotRegex.test(newTimeSlot) && !localTimeSlots.includes(newTimeSlot)) {
       const sortedSlots = [...localTimeSlots, newTimeSlot].sort();
       setLocalTimeSlots(sortedSlots);
       setNewTimeSlot("");
@@ -82,12 +89,11 @@ export function SettingsDialog({ isOpen, onClose, courts, timeSlots, courtRates,
     }
   }
 
-  const handleRemoveTimeSlot = (slot: string) => {
-    setLocalTimeSlots(prev => prev.filter(s => s !== slot));
+  const handleRemoveTimeSlot = (index: number) => {
+    setLocalTimeSlots(prev => prev.filter((_, i) => i !== index));
   }
 
   const handleSave = () => {
-    // Prevent saving with no courts or time slots
     if (localCourts.length === 0) {
       toast({ variant: "destructive", title: "Cannot save without any courts." });
       return;
@@ -97,9 +103,30 @@ export function SettingsDialog({ isOpen, onClose, courts, timeSlots, courtRates,
       return;
     }
 
+    const seenSlots = new Set();
+    for (const slot of localTimeSlots) {
+      if (!timeSlotRegex.test(slot)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Time Slot Format",
+          description: `The slot "${slot}" is not in the correct HH:MM - HH:MM format.`,
+        });
+        return;
+      }
+      if (seenSlots.has(slot)) {
+        toast({
+          variant: "destructive",
+          title: "Duplicate Time Slot",
+          description: `The slot "${slot}" is duplicated. Please ensure all slots are unique.`,
+        });
+        return;
+      }
+      seenSlots.add(slot);
+    }
+
     onSave({
       courts: localCourts,
-      timeSlots: localTimeSlots,
+      timeSlots: [...localTimeSlots].sort(),
       rates: localRates
     });
     toast({
@@ -155,10 +182,13 @@ export function SettingsDialog({ isOpen, onClose, courts, timeSlots, courtRates,
             <div>
               <h3 className="text-lg font-medium mb-2">Manage Time Slots</h3>
               <div className="space-y-2">
-                {localTimeSlots.map((slot) => (
-                  <div key={slot} className="flex items-center gap-2">
-                    <Input value={slot} readOnly className="flex-grow bg-muted" />
-                    <Button variant="ghost" size="icon" onClick={() => handleRemoveTimeSlot(slot)}>
+                {localTimeSlots.map((slot, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input 
+                      value={slot} 
+                      onChange={(e) => handleTimeSlotChange(index, e.target.value)}
+                      className="flex-grow" />
+                    <Button variant="ghost" size="icon" onClick={() => handleRemoveTimeSlot(index)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

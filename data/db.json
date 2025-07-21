@@ -1,5 +1,15 @@
 {
-  "bookings": [],
+  "bookings": [
+    {
+      "courtId": 1,
+      "date": "2025-07-21",
+      "timeSlot": "09:00 - 10:00 & 10:00 - 11:00 & 11:00 - 12:00 & 12:00 - 13:00",
+      "customerName": "aekky",
+      "customerPhone": "95694208",
+      "id": "2025-07-21T15:06:46.952Z0.5659903632495031",
+      "status": "completed"
+    }
+  ],
   "courts": [
     {
       "id": 1,
