@@ -68,14 +68,14 @@ export function RangeBookingDialog({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const { courtId, startTime, endTime, customerName, customerPhone } = values;
 
-    const startIndex = timeSlots.indexOf(startTime);
-    const endIndex = timeSlots.indexOf(endTime);
+    const startIndex = timeSlots.findIndex(slot => slot.split(' - ')[0] === startTime);
+    const endIndex = timeSlots.findIndex(slot => slot.split(' - ')[1] === endTime);
 
     if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
       toast({
         variant: "destructive",
         title: "Invalid Time Range",
-        description: "The selected start time must be before the end time.",
+        description: "The selected start time must be before or the same as the end time.",
       });
       return;
     }
@@ -170,7 +170,7 @@ export function RangeBookingDialog({
                         </FormControl>
                         <SelectContent>
                         {timeSlots.map((slot) => (
-                            <SelectItem key={`start-${slot}`} value={slot}>
+                            <SelectItem key={`start-${slot}`} value={slot.split(' - ')[0]}>
                             {slot.split(' - ')[0]}
                             </SelectItem>
                         ))}
@@ -194,7 +194,7 @@ export function RangeBookingDialog({
                         </FormControl>
                         <SelectContent>
                         {timeSlots.map((slot) => (
-                            <SelectItem key={`end-${slot}`} value={slot}>
+                            <SelectItem key={`end-${slot}`} value={slot.split(' - ')[1]}>
                             {slot.split(' - ')[1]}
                             </SelectItem>
                         ))}
