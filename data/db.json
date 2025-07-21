@@ -1,3 +1,4 @@
+
 {
   "bookings": [],
   "courts": [
@@ -38,16 +39,5 @@
     "3": 60000,
     "4": 60000
   },
-  "users": [
-    {
-      "id": "admin-user",
-      "email": "aekky.computer.cs@gamil.com",
-      "phone": "55526477",
-      "password": "55526477",
-      "role": "admin",
-      "firstName": "Aekoudone",
-      "lastName": "Thebvongsa"
-    }
-  
-  ]
+  "users": []
 }

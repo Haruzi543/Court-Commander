@@ -3,10 +3,12 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
+import bcrypt from 'bcrypt';
 import type { Booking, Court, CourtRate, User, NewUser } from './types';
 import { DEFAULT_COURTS, DEFAULT_TIME_SLOTS, DEFAULT_HOURLY_RATE } from './constants';
 
 const dataFilePath = path.join(process.cwd(), 'data/db.json');
+const saltRounds = 10;
 
 interface DbData {
   bookings: Booking[];
@@ -36,24 +38,27 @@ async function initializeDefaultData(existingBookings: Booking[], existingUsers:
         return acc;
     }, {} as CourtRate);
     
-    const adminUser: User = { 
-        id: "admin-user", 
-        email: "aekky@example.com", 
-        phone: "12345678", 
-        password: "55526477", 
-        role: "admin",
-        firstName: "Admin",
-        lastName: "User"
-    };
+    const adminExists = existingUsers.some(u => u.email === 'aekky@example.com');
+    if (!adminExists) {
+        const hashedPassword = await bcrypt.hash("55526477", saltRounds);
+        const adminUser: User = { 
+            id: "admin-user", 
+            email: "aekky@example.com", 
+            phone: "12345678", 
+            password: hashedPassword, 
+            role: "admin",
+            firstName: "Admin",
+            lastName: "User"
+        };
+        existingUsers.push(adminUser);
+    }
     
-    const users = [adminUser, ...existingUsers.filter(u => u.email !== 'aekky@example.com')];
-
     const defaultData: DbData = {
       bookings: existingBookings,
       courts: DEFAULT_COURTS,
       timeSlots: DEFAULT_TIME_SLOTS,
       courtRates: defaultRates,
-      users: users,
+      users: existingUsers,
     };
     await writeData(defaultData);
     return defaultData;
@@ -85,9 +90,13 @@ export async function addUser(newUserData: NewUser): Promise<User> {
     if (data.users.some(u => u.email === newUserData.email)) {
         throw new Error("Email already exists.");
     }
+    
+    const hashedPassword = await bcrypt.hash(newUserData.password, saltRounds);
+    
     const newUser: User = {
         ...newUserData,
         id: new Date().toISOString() + Math.random(),
+        password: hashedPassword,
     };
     data.users.push(newUser);
     await writeData(data);
