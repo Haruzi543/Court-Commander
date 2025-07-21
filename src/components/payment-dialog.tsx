@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
 
 interface PaymentDialogProps {
   isOpen: boolean;
@@ -25,32 +26,38 @@ interface PaymentDialogProps {
 
 export function PaymentDialog({ isOpen, onClose, booking, court, rate, onUpdateBooking, onDeleteBooking }: PaymentDialogProps) {
   const { toast } = useToast();
-  const durationHours = booking.timeSlot.split(" & ").length;
+  const [currentBooking, setCurrentBooking] = useState(booking);
+
+  useEffect(() => {
+    setCurrentBooking(booking);
+  }, [booking, isOpen]);
+  
+  const durationHours = currentBooking.timeSlot.split(" & ").length;
   const totalCost = rate * durationHours;
 
   const handleMarkArrived = () => {
-    onUpdateBooking(booking.id, "arrived");
+    onUpdateBooking(currentBooking.id, "arrived");
+    setCurrentBooking({ ...currentBooking, status: 'arrived' });
     toast({
       title: "Customer Arrived",
-      description: `${booking.customerName} has been marked as arrived.`,
+      description: `${currentBooking.customerName} has been marked as arrived.`,
     });
-    onClose();
   };
 
   const handleConfirmPayment = () => {
-    onDeleteBooking(booking.id);
+    onDeleteBooking(currentBooking.id);
     toast({
       title: "Payment Confirmed",
-      description: `Booking for ${booking.customerName} has been paid and cleared.`,
+      description: `Booking for ${currentBooking.customerName} has been paid and cleared.`,
     });
     onClose();
   };
   
   const handleCancelBooking = () => {
-    onDeleteBooking(booking.id);
+    onDeleteBooking(currentBooking.id);
     toast({
       title: "Booking Cancelled",
-      description: `Booking for ${booking.customerName} has been cancelled.`,
+      description: `Booking for ${currentBooking.customerName} has been cancelled.`,
       variant: "destructive",
     });
     onClose();
@@ -62,27 +69,27 @@ export function PaymentDialog({ isOpen, onClose, booking, court, rate, onUpdateB
         <DialogHeader>
           <DialogTitle>Booking Details</DialogTitle>
           <DialogDescription>
-            {court.name} - {booking.timeSlot}
+            {court.name} - {currentBooking.timeSlot}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Customer:</span>
-            <span className="font-medium">{booking.customerName}</span>
+            <span className="font-medium">{currentBooking.customerName}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Phone:</span>
-            <span className="font-medium">{booking.customerPhone}</span>
+            <span className="font-medium">{currentBooking.customerPhone}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Status:</span>
-            <span className="font-medium capitalize">{booking.status}</span>
+            <span className="font-medium capitalize">{currentBooking.status}</span>
           </div>
            <div className="flex justify-between">
             <span className="text-muted-foreground">Duration:</span>
             <span className="font-medium">{durationHours} hour(s)</span>
           </div>
-          {booking.status === "arrived" && (
+          {currentBooking.status === "arrived" && (
             <>
               <Separator />
               <div className="flex justify-between items-center">
@@ -98,7 +105,7 @@ export function PaymentDialog({ isOpen, onClose, booking, court, rate, onUpdateB
         </div>
         <DialogFooter className="sm:justify-between gap-2">
             <Button variant="destructive" onClick={handleCancelBooking}>Cancel Booking</Button>
-            {booking.status === "booked" ? (
+            {currentBooking.status === "booked" ? (
               <Button onClick={handleMarkArrived}>Mark as Arrived</Button>
             ) : (
               <Button onClick={handleConfirmPayment}>Confirm Payment</Button>
