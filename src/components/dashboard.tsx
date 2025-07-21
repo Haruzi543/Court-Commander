@@ -113,7 +113,7 @@ export function Dashboard() {
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             {isAdmin ? (
-               <TabsList className="grid w-full grid-cols-5 md:w-[600px]">
+               <TabsList className="grid w-full grid-cols-5 md:w-auto">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="schedule">Schedule</TabsTrigger>
                 <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
@@ -168,10 +168,12 @@ export function Dashboard() {
                    {!isAdmin && <CardDescription>Welcome, {user.firstName}! Select a slot to start.</CardDescription>}
                    {isAdmin && <CardDescription>Click an available time slot on the grid to book it.</CardDescription>}
                 </div>
-                <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
-                  <Clock className="mr-2" />
-                  Book by Range
-                </Button>
+                {isAdmin && (
+                  <Button variant="outline" onClick={() => setIsRangeBookingOpen(true)}>
+                    <Clock className="mr-2" />
+                    Book by Range
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
                 <CourtScheduleTable
