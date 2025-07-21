@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -19,11 +20,20 @@ import { PaymentManagement } from "@/components/payment-management";
 import { HistoryManagement } from "@/components/history-management";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { Logo } from "@/components/icons";
-import { COURTS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export function Dashboard() {
-  const { bookings, courtRates, addBooking, updateBookingStatus, completeBooking, updateCourtRates, isLoaded } = useBookings();
+  const { 
+    bookings, 
+    courts, 
+    timeSlots,
+    courtRates, 
+    addBooking, 
+    updateBookingStatus, 
+    completeBooking, 
+    updateCourtSettings,
+    isLoaded 
+  } = useBookings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState("schedule");
@@ -100,7 +110,8 @@ export function Dashboard() {
               <CardContent>
                 <CourtScheduleTable
                   bookings={dailyBookings.filter(b => b.status === 'booked' || b.status === 'arrived')}
-                  courts={COURTS}
+                  courts={courts}
+                  timeSlots={timeSlots}
                   onBookSlot={addBooking}
                   selectedDate={formattedDate}
                   onNavigateToTab={setActiveTab}
@@ -117,7 +128,7 @@ export function Dashboard() {
            <TabsContent value="payments">
             <PaymentManagement
               bookings={dailyBookings}
-              courts={COURTS}
+              courts={courts}
               courtRates={courtRates}
               onCompleteBooking={completeBooking}
             />
@@ -125,7 +136,7 @@ export function Dashboard() {
           <TabsContent value="history">
             <HistoryManagement
               bookings={bookings.filter(b => b.status === 'completed')}
-              courts={COURTS}
+              courts={courts}
               courtRates={courtRates}
             />
           </TabsContent>
@@ -135,9 +146,10 @@ export function Dashboard() {
       <SettingsDialog
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        courts={COURTS}
+        courts={courts}
+        timeSlots={timeSlots}
         courtRates={courtRates}
-        onSave={updateCourtRates}
+        onSave={updateCourtSettings}
       />
     </div>
   );

@@ -2,24 +2,28 @@
 "use client";
 
 import { useState, useEffect, useCallback, useTransition } from "react";
-import type { Booking, CourtRate } from "@/lib/types";
+import type { Booking, Court, CourtRate } from "@/lib/types";
 import { 
   addBooking as addBookingAction,
   updateBookingStatus as updateBookingStatusAction,
   completeBooking as completeBookingAction,
-  updateCourtRates as updateCourtRatesAction,
+  updateCourtSettings as updateCourtSettingsAction,
   getData
 } from "@/lib/data-service";
 
 export function useBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [courts, setCourts] = useState<Court[]>([]);
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [courtRates, setCourtRates] = useState<CourtRate>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const loadData = useCallback(async () => {
-    const { bookings, courtRates } = await getData();
+    const { bookings, courts, timeSlots, courtRates } = await getData();
     setBookings(bookings);
+    setCourts(courts);
+    setTimeSlots(timeSlots);
     setCourtRates(courtRates);
     setIsLoaded(true);
   }, []);
@@ -53,20 +57,24 @@ export function useBookings() {
     });
   }, []);
   
-  const updateCourtRates = useCallback((rates: CourtRate) => {
+  const updateCourtSettings = useCallback((settings: {courts: Court[], timeSlots: string[], rates: CourtRate}) => {
     startTransition(async () => {
-      const updatedRates = await updateCourtRatesAction(rates);
-      setCourtRates(updatedRates);
+      const updatedSettings = await updateCourtSettingsAction(settings);
+      setCourts(updatedSettings.courts);
+      setTimeSlots(updatedSettings.timeSlots);
+      setCourtRates(updatedSettings.courtRates);
     });
   }, []);
 
   return {
     bookings,
+    courts,
+    timeSlots,
     courtRates,
     isLoaded: isLoaded && !isPending,
     addBooking,
     updateBookingStatus,
     completeBooking,
-    updateCourtRates,
+    updateCourtSettings,
   };
 }

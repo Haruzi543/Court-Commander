@@ -1,13 +1,17 @@
+
+// This file is kept for default values if the data file is ever corrupted or deleted.
+// The primary source of truth for courts and time slots is now data/db.json.
+
 import type { Court } from "./types";
 
-export const COURTS: Court[] = [
+export const DEFAULT_COURTS: Court[] = [
   { id: 1, name: "Court 1" },
   { id: 2, name: "Court 2" },
   { id: 3, name: "Court 3" },
   { id: 4, name: "Court 4" },
 ];
 
-export const TIME_SLOTS = [
+export const DEFAULT_TIME_SLOTS = [
   "09:00 - 10:00",
   "10:00 - 11:00",
   "11:00 - 12:00",

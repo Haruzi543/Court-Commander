@@ -3,38 +3,48 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { Booking, CourtRate } from './types';
-import { COURTS, DEFAULT_HOURLY_RATE } from './constants';
+import type { Booking, Court, CourtRate } from './types';
+import { DEFAULT_COURTS, DEFAULT_TIME_SLOTS, DEFAULT_HOURLY_RATE } from './constants';
 
 const dataFilePath = path.join(process.cwd(), 'data/db.json');
 
 interface DbData {
   bookings: Booking[];
+  courts: Court[];
+  timeSlots: string[];
   courtRates: CourtRate;
 }
 
 async function readData(): Promise<DbData> {
   try {
     const fileContent = await fs.readFile(dataFilePath, 'utf-8');
-    return JSON.parse(fileContent) as DbData;
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      const defaultRates = COURTS.reduce((acc, court) => {
-          acc[court.id] = DEFAULT_HOURLY_RATE;
-          return acc;
-      }, {} as CourtRate);
-      
-      const defaultData: DbData = {
-        bookings: [],
-        courtRates: defaultRates,
-      };
-      await writeData(defaultData);
-      return defaultData;
+    const data = JSON.parse(fileContent) as DbData;
+    // Ensure all fields exist
+    if (!data.courts || !data.timeSlots || !data.courtRates) {
+        return await initializeDefaultData();
     }
-    console.error("Failed to read data file", error);
-    throw new Error("Could not read data file.");
+    return data;
+  } catch (error) {
+    return await initializeDefaultData();
   }
 }
+
+async function initializeDefaultData(): Promise<DbData> {
+    const defaultRates = DEFAULT_COURTS.reduce((acc, court) => {
+        acc[court.id] = DEFAULT_HOURLY_RATE;
+        return acc;
+    }, {} as CourtRate);
+    
+    const defaultData: DbData = {
+      bookings: [],
+      courts: DEFAULT_COURTS,
+      timeSlots: DEFAULT_TIME_SLOTS,
+      courtRates: defaultRates,
+    };
+    await writeData(defaultData);
+    return defaultData;
+}
+
 
 async function writeData(data: DbData): Promise<void> {
   try {
@@ -90,9 +100,11 @@ export async function deleteBooking(bookingId: string): Promise<{ success: true 
   return { success: true };
 }
 
-export async function updateCourtRates(newRates: CourtRate): Promise<CourtRate> {
+export async function updateCourtSettings(settings: {courts: Court[], timeSlots: string[], rates: CourtRate}): Promise<DbData> {
   const data = await readData();
-  data.courtRates = newRates;
+  data.courts = settings.courts;
+  data.timeSlots = settings.timeSlots;
+  data.courtRates = settings.rates;
   await writeData(data);
-  return data.courtRates;
+  return data;
 }

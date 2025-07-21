@@ -1,8 +1,8 @@
+
 "use client";
 
 import { useState } from "react";
 import type { Booking, Court } from "@/lib/types";
-import { TIME_SLOTS } from "@/lib/constants";
 import {
   Table,
   TableHeader,
@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 interface CourtScheduleTableProps {
   bookings: Booking[];
   courts: Court[];
+  timeSlots: string[];
   onBookSlot: (booking: Omit<Booking, "id" | "status">) => void;
   selectedDate: string;
   onNavigateToTab: (tab: "arrivals" | "payments" | "history" | "schedule") => void;
@@ -27,6 +28,7 @@ interface CourtScheduleTableProps {
 export function CourtScheduleTable({
   bookings,
   courts,
+  timeSlots,
   onBookSlot,
   selectedDate,
   onNavigateToTab
@@ -35,19 +37,38 @@ export function CourtScheduleTable({
   const [selectedSlots, setSelectedSlots] = useState<{ courtId: number; timeSlots: string[] }>({ courtId: -1, timeSlots: [] });
 
   const handleSlotClick = (courtId: number, timeSlot: string) => {
-    if (selectedSlots.courtId !== courtId) {
+    if (selectedSlots.courtId !== courtId && selectedSlots.courtId !== -1) {
+      setSelectedSlots({ courtId, timeSlots: [timeSlot] });
+      return;
+    }
+    
+    if (selectedSlots.courtId === -1) {
       setSelectedSlots({ courtId, timeSlots: [timeSlot] });
       return;
     }
 
-    const newTimeSlots = [...selectedSlots.timeSlots];
+    let newTimeSlots = [...selectedSlots.timeSlots];
     const slotIndex = newTimeSlots.indexOf(timeSlot);
 
     if (slotIndex > -1) {
-      newTimeSlots.splice(slotIndex);
+      // If the clicked slot is the last one in the selection, deselect it
+      if (timeSlot === newTimeSlots[newTimeSlots.length - 1]) {
+        newTimeSlots.pop();
+      } else {
+        // If it's in the middle, deselect it and all subsequent slots
+        newTimeSlots.splice(slotIndex);
+      }
     } else {
-      newTimeSlots.push(timeSlot);
-      newTimeSlots.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
+      // Check if it's consecutive to the last selected slot
+      const lastSlot = newTimeSlots[newTimeSlots.length - 1];
+      const lastSlotIndex = timeSlots.indexOf(lastSlot);
+      const currentSlotIndex = timeSlots.indexOf(timeSlot);
+      if (currentSlotIndex === lastSlotIndex + 1) {
+          newTimeSlots.push(timeSlot);
+      } else {
+          // If not consecutive, start a new selection
+          newTimeSlots = [timeSlot];
+      }
     }
     
     setSelectedSlots({ courtId, timeSlots: newTimeSlots });
@@ -102,7 +123,7 @@ export function CourtScheduleTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {TIME_SLOTS.map((timeSlot) => (
+            {timeSlots.map((timeSlot) => (
               <TableRow key={timeSlot}>
                 <TableCell className="font-medium">{timeSlot}</TableCell>
                 {courts.map((court) => {
@@ -148,7 +169,7 @@ export function CourtScheduleTable({
           </TableBody>
         </Table>
       </div>
-      {selectedSlots.courtId !== -1 && selectedSlots.timeSlots.length > 0 && (
+      {selectedSlots.courtId !== -1 && selectedSlots.timeSlots.length > 0 && courts.find(c => c.id === selectedSlots.courtId) && (
         <BookingDialog
           isOpen={bookingDialogOpen}
           onClose={handleCloseBookingDialog}
