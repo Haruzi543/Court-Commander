@@ -1,0 +1,29 @@
+diff --git a/node_modules/bcrypt/package.json b/node_modules/bcrypt/package.json
+index 358248c..55c7608 100644
+--- a/node_modules/bcrypt/package.json
++++ b/node_modules/bcrypt/package.json
+@@ -60,7 +60,7 @@
+     "node-pre-gyp": ">=0.12.0"
+   },
+   "devDependencies": {
+-    "node-pre-gyp-github": ">=1.4.3",
++    "node-pre-gyp-github": "1.4.3",
+     "mocha": ">=7.1.1",
+     "standard": ">=14.3.3"
+   }
+diff --git a/node_modules/bcrypt/scripts/install.js b/node_modules/bcrypt/scripts/install.js
+index 7a1a2b7..7a63d76 100644
+--- a/node_modules/bcrypt/scripts/install.js
++++ b/node_modules/bcrypt/scripts/install.js
+@@ -1,6 +1,6 @@
+ 'use strict'
+ 
+-const np = require('node-pre-gyp-github')
++// const np = require('node-pre-gyp-github')
+ 
+-np.run('install', {
+-  'fallback-to-build': true
+-})
++// np.run('install', {
++//   'fallback-to-build': true
++// })
