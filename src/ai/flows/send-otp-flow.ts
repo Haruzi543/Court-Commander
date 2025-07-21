@@ -10,6 +10,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 
 // Define the schema for the input of the OTP flow
@@ -40,6 +41,7 @@ export async function sendOtp(input: Omit<SendOtpInput, 'otp'>): Promise<SendOtp
 // Define the Genkit prompt for generating the OTP and email content
 const sendOtpPrompt = ai.definePrompt({
     name: 'sendOtpPrompt',
+    model: googleAI.model('gemini-1.5-flash-preview'),
     input: { schema: SendOtpInputSchema },
     output: { schema: SendOtpOutputSchema },
     prompt: `
@@ -89,5 +91,3 @@ const sendOtpFlow = ai.defineFlow(
     return output;
   }
 );
-
-    
