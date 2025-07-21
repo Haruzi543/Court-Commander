@@ -84,8 +84,11 @@ export function RangeBookingDialog({
 
     // Check for conflicts
     const courtBookings = bookings.filter(b => b.courtId === parseInt(courtId));
-    const isConflict = selectedTimeSlots.some(slot => 
-        courtBookings.some(booking => booking.timeSlot.includes(slot))
+    const isConflict = selectedTimeSlots.some(newSlot => 
+      courtBookings.some(existingBooking => {
+        const existingSlots = existingBooking.timeSlot.split(" & ");
+        return existingSlots.includes(newSlot);
+      })
     );
 
     if (isConflict) {
