@@ -149,13 +149,18 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
             />
             <DialogFooter>
               {isUser && showConfirm ? (
-                <Button type="submit" className="w-full">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Confirm Booking ({countdown}s)
-                </Button>
+                <div className="flex w-full gap-2">
+                  <Button type="button" variant="outline" className="w-full" onClick={handleClose}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="w-full">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Confirm ({countdown}s)
+                  </Button>
+                </div>
               ) : (
                 <Button type="submit">
-                  Book
+                  {isUser ? 'Request Booking' : 'Book'}
                 </Button>
               )}
             </DialogFooter>
