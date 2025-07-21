@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from "react";
 import { format, addDays, startOfToday } from "date-fns";
-import { Settings, Loader2, Calendar as CalendarIcon, History } from "lucide-react";
+import { Settings, Loader2, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { useBookings } from "@/hooks/use-bookings";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,13 +12,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourtScheduleTable } from "@/components/court-schedule-table";
 import { ArrivalManagement } from "@/components/arrival-management";
 import { PaymentManagement } from "@/components/payment-management";
 import { HistoryManagement } from "@/components/history-management";
 import { SettingsDialog } from "@/components/settings-dialog";
+import { RangeBookingDialog } from "@/components/range-booking-dialog";
 import { Logo } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ export function Dashboard() {
     isLoaded 
   } = useBookings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isRangeBookingOpen, setIsRangeBookingOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState("schedule");
 
@@ -105,7 +107,14 @@ export function Dashboard() {
           <TabsContent value="schedule">
             <Card>
               <CardHeader>
-                <CardTitle>Schedule for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <CardTitle>Schedule for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
+                  <Button onClick={() => setIsRangeBookingOpen(true)}>
+                    <Clock className="mr-2 h-4 w-4" />
+                    Book by Range
+                  </Button>
+                </div>
+                 <CardDescription>Click available slots or use "Book by Range" to create a reservation.</CardDescription>
               </CardHeader>
               <CardContent>
                 <CourtScheduleTable
@@ -150,6 +159,15 @@ export function Dashboard() {
         timeSlots={timeSlots}
         courtRates={courtRates}
         onSave={updateCourtSettings}
+      />
+      <RangeBookingDialog
+        isOpen={isRangeBookingOpen}
+        onClose={() => setIsRangeBookingOpen(false)}
+        courts={courts}
+        timeSlots={timeSlots}
+        bookings={dailyBookings}
+        selectedDate={formattedDate}
+        onBook={addBooking}
       />
     </div>
   );
