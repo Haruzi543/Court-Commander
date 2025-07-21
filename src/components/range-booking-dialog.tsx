@@ -39,7 +39,6 @@ interface RangeBookingDialogProps {
 }
 
 const formSchema = z.object({
-  courtId: z.string().min(1, { message: "Please select a court." }),
   startTime: z.string().min(1, { message: "Please select a start time." }),
   endTime: z.string().min(1, { message: "Please select an end time." }),
   customerName: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -61,7 +60,6 @@ export function RangeBookingDialog({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      courtId: "",
       startTime: "",
       endTime: "",
       customerName: "",
@@ -69,16 +67,11 @@ export function RangeBookingDialog({
     },
   });
 
-  const { watch, setValue } = form;
-  const selectedCourtId = watch('courtId');
-  const selectedStartTime = watch('startTime');
-
   const isUser = user?.role === 'user';
 
   useEffect(() => {
     if (isOpen) {
       form.reset({
-        courtId: "",
         startTime: "",
         endTime: "",
         customerName: isUser ? `${user.firstName} ${user.lastName}` : "",
@@ -87,67 +80,8 @@ export function RangeBookingDialog({
     }
   }, [isOpen, user, isUser, form]);
   
-  const availableEndTimes = useMemo(() => {
-    if (!selectedCourtId || !selectedStartTime) {
-      return timeSlots;
-    }
-
-    const startIndex = timeSlots.indexOf(timeSlots.find(slot => slot.startsWith(selectedStartTime))!);
-    if (startIndex === -1) return [];
-
-    const courtBookings = bookings.filter(b => b.courtId === parseInt(selectedCourtId));
-    const bookedSlotsForCourt = courtBookings.flatMap(b => b.timeSlot.split(" & "));
-
-    let firstConflictIndex = -1;
-    for (let i = startIndex; i < timeSlots.length; i++) {
-        if (bookedSlotsForCourt.includes(timeSlots[i])) {
-            firstConflictIndex = i;
-            break;
-        }
-    }
-    
-    const potentialEndSlots = timeSlots.slice(startIndex);
-    if (firstConflictIndex !== -1) {
-        return potentialEndSlots.slice(0, firstConflictIndex - startIndex);
-    }
-
-    return potentialEndSlots;
-  }, [selectedCourtId, selectedStartTime, bookings, timeSlots]);
-  
-  const nextAvailableSlotInfo = useMemo(() => {
-    if (!selectedCourtId || !selectedStartTime) return null;
-
-    const startIndex = timeSlots.findIndex(slot => slot.startsWith(selectedStartTime));
-    if (startIndex === -1) return null;
-    
-    const courtBookings = bookings.filter(b => b.courtId === parseInt(selectedCourtId));
-    const bookedSlotsForCourt = new Set(courtBookings.flatMap(b => b.timeSlot.split(" & ")));
-
-    if (bookedSlotsForCourt.has(timeSlots[startIndex])) {
-        let nextAvailable = null;
-        for (let i = startIndex + 1; i < timeSlots.length; i++) {
-            if (!bookedSlotsForCourt.has(timeSlots[i])) {
-                nextAvailable = timeSlots[i];
-                break;
-            }
-        }
-        if (nextAvailable) {
-            return `This slot is booked. Next available time is ${nextAvailable.split(' - ')[0]}.`;
-        } else {
-            return 'This slot is booked. No more available times today for this court.';
-        }
-    }
-    return null;
-  }, [selectedCourtId, selectedStartTime, bookings, timeSlots]);
-
-
-  useEffect(() => {
-    setValue('endTime', '');
-  }, [selectedCourtId, selectedStartTime, setValue]);
-
-
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const { courtId, startTime, endTime, customerName, customerPhone } = values;
+    const { startTime, endTime, customerName, customerPhone } = values;
     
     const startTimeValue = timeSlots.find(slot => slot.startsWith(startTime))?.split(' - ')[0];
     const endTimeValue = timeSlots.find(slot => slot.endsWith(endTime))?.split(' - ')[1];
@@ -163,40 +97,43 @@ export function RangeBookingDialog({
 
     const startIndex = timeSlots.findIndex(slot => slot.startsWith(startTimeValue));
     const endIndex = timeSlots.findIndex(slot => slot.endsWith(endTimeValue));
-    
     const selectedTimeSlots = timeSlots.slice(startIndex, endIndex + 1);
 
-    // Final conflict check, just in case
-    const courtBookings = bookings.filter(b => b.courtId === parseInt(courtId));
-    const isConflict = selectedTimeSlots.some(newSlot => 
-      courtBookings.some(existingBooking => {
-        const existingSlots = existingBooking.timeSlot.split(" & ");
-        return existingSlots.includes(newSlot);
-      })
-    );
+    // Find the first available court for the entire time range
+    const availableCourt = courts.find(court => {
+        // Check if this court has any conflicting bookings
+        const hasConflict = bookings.some(booking => {
+            if (booking.courtId !== court.id) {
+                return false; // Not this court
+            }
+            const existingSlots = booking.timeSlot.split(" & ");
+            // Return true if any of the selected slots are already in this booking
+            return selectedTimeSlots.some(slot => existingSlots.includes(slot));
+        });
+        // If there's no conflict, this court is available
+        return !hasConflict;
+    });
 
-    if (isConflict) {
+    if (!availableCourt) {
         toast({
             variant: "destructive",
-            title: "Booking Conflict",
-            description: "One or more selected time slots are no longer available. Please try again.",
+            title: "No Available Courts",
+            description: "No courts are available for the entire selected time range. Please try a different time.",
         });
         return;
     }
 
     onBook({
-      courtId: parseInt(courtId),
+      courtId: availableCourt.id,
       date: selectedDate,
       timeSlot: selectedTimeSlots.join(" & "),
       customerName,
       customerPhone,
     });
 
-    const court = courts.find(c => c.id === parseInt(courtId));
-
     toast({
       title: "Booking Confirmed!",
-      description: `${court?.name} from ${startTimeValue} to ${endTimeValue} has been booked for ${customerName}.`,
+      description: `${availableCourt.name} from ${startTimeValue} to ${endTimeValue} has been booked for ${customerName}.`,
     });
     handleClose();
   };
@@ -212,35 +149,11 @@ export function RangeBookingDialog({
         <DialogHeader>
           <DialogTitle>Book by Time Range</DialogTitle>
           <DialogDescription>
-            Select a court and a time range to create a booking.
+            Select a time range. The system will find an available court for you.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="courtId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Court</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a court" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {courts.map((court) => (
-                        <SelectItem key={court.id} value={String(court.id)}>
-                          {court.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <div className="grid grid-cols-2 gap-4">
                 <FormField
                 control={form.control}
@@ -272,14 +185,14 @@ export function RangeBookingDialog({
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>End Time</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCourtId || !selectedStartTime}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        {availableEndTimes.map((slot) => (
+                        {timeSlots.map((slot) => (
                             <SelectItem key={`end-${slot}`} value={slot.split(' - ')[1]}>
                             {slot.split(' - ')[1]}
                             </SelectItem>
@@ -291,9 +204,6 @@ export function RangeBookingDialog({
                 )}
                 />
             </div>
-             {nextAvailableSlotInfo && (
-                <p className="text-sm text-destructive">{nextAvailableSlotInfo}</p>
-            )}
             <FormField
               control={form.control}
               name="customerName"
@@ -321,7 +231,7 @@ export function RangeBookingDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit">Confirm Booking</Button>
+              <Button type="submit">Find Court & Book</Button>
             </DialogFooter>
           </form>
         </Form>
