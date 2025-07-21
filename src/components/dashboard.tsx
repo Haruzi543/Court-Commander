@@ -21,6 +21,7 @@ import { SettingsDialog } from "@/components/settings-dialog";
 import { RangeBookingDialog } from "@/components/range-booking-dialog";
 import { Logo } from "@/components/icons";
 import { cn } from "@/lib/utils";
+import { DashboardOverview } from "./dashboard-overview";
 
 export function Dashboard() {
   const { 
@@ -37,7 +38,7 @@ export function Dashboard() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRangeBookingOpen, setIsRangeBookingOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [activeTab, setActiveTab] = useState("schedule");
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
@@ -73,7 +74,8 @@ export function Dashboard() {
       <main className="container mx-auto p-4 md:p-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <TabsList className="grid w-full grid-cols-4 md:w-[500px]">
+            <TabsList className="grid w-full grid-cols-5 md:w-[600px]">
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="schedule">Schedule</TabsTrigger>
               <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
               <TabsTrigger value="payments">Payments</TabsTrigger>
@@ -103,6 +105,14 @@ export function Dashboard() {
               </PopoverContent>
             </Popover>
           </div>
+           <TabsContent value="dashboard">
+            <DashboardOverview 
+              bookings={dailyBookings} 
+              courts={courts}
+              courtRates={courtRates}
+              selectedDate={selectedDate}
+            />
+          </TabsContent>
           <TabsContent value="schedule">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
