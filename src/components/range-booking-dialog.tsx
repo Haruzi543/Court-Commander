@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -27,6 +27,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth-context";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface RangeBookingDialogProps {
   isOpen: boolean;
@@ -39,10 +41,18 @@ interface RangeBookingDialogProps {
 }
 
 const formSchema = z.object({
+  courtId: z.string().optional(),
   startTime: z.string().min(1, { message: "Please select a start time." }),
   endTime: z.string().min(1, { message: "Please select an end time." }),
   customerName: z.string().min(2, { message: "Name must be at least 2 characters." }),
   customerPhone: z.string().min(1, { message: "Phone number is required." }),
+}).refine(data => {
+  const startTimeValue = data.startTime?.split(' - ')[0];
+  const endTimeValue = data.endTime?.split(' - ')[1];
+  return startTimeValue && endTimeValue && startTimeValue < endTimeValue;
+}, {
+  message: "End time must be after the start time.",
+  path: ["endTime"],
 });
 
 export function RangeBookingDialog({ 
@@ -56,10 +66,12 @@ export function RangeBookingDialog({
 }: RangeBookingDialogProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [autoFindCourt, setAutoFindCourt] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      courtId: "",
       startTime: "",
       endTime: "",
       customerName: "",
@@ -72,20 +84,29 @@ export function RangeBookingDialog({
   useEffect(() => {
     if (isOpen) {
       form.reset({
+        courtId: "",
         startTime: "",
         endTime: "",
         customerName: isUser ? `${user.firstName} ${user.lastName}` : "",
         customerPhone: isUser ? user.phone : "",
       });
+      // Reset to default state when dialog opens
+      setAutoFindCourt(true);
     }
   }, [isOpen, user, isUser, form]);
   
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const { startTime, endTime, customerName, customerPhone } = values;
+    const { courtId, startTime, endTime, customerName, customerPhone } = values;
     
+    if (!autoFindCourt && !courtId) {
+        form.setError("courtId", { type: "manual", message: "Please select a court." });
+        return;
+    }
+
     const startTimeValue = timeSlots.find(slot => slot.startsWith(startTime))?.split(' - ')[0];
     const endTimeValue = timeSlots.find(slot => slot.endsWith(endTime))?.split(' - ')[1];
     
+    // This validation is now handled by Zod's refine, but we keep a check just in case.
     if (!startTimeValue || !endTimeValue || startTimeValue >= endTimeValue) {
       toast({
         variant: "destructive",
@@ -99,32 +120,38 @@ export function RangeBookingDialog({
     const endIndex = timeSlots.findIndex(slot => slot.endsWith(endTimeValue));
     const selectedTimeSlots = timeSlots.slice(startIndex, endIndex + 1);
 
-    // Find the first available court for the entire time range
-    const availableCourt = courts.find(court => {
-        // Check if this court has any conflicting bookings
-        const hasConflict = bookings.some(booking => {
-            if (booking.courtId !== court.id) {
-                return false; // Not this court
-            }
+    const checkCourtAvailability = (court: Court) => {
+        return !bookings.some(booking => {
+            if (booking.courtId !== court.id) return false;
             const existingSlots = booking.timeSlot.split(" & ");
-            // Return true if any of the selected slots are already in this booking
             return selectedTimeSlots.some(slot => existingSlots.includes(slot));
         });
-        // If there's no conflict, this court is available
-        return !hasConflict;
-    });
+    };
 
-    if (!availableCourt) {
+    let targetCourt: Court | undefined;
+    
+    if (autoFindCourt) {
+        targetCourt = courts.find(checkCourtAvailability);
+    } else {
+        const selectedCourt = courts.find(c => c.id === Number(courtId));
+        if (selectedCourt && checkCourtAvailability(selectedCourt)) {
+            targetCourt = selectedCourt;
+        }
+    }
+    
+    if (!targetCourt) {
         toast({
             variant: "destructive",
             title: "No Available Courts",
-            description: "No courts are available for the entire selected time range. Please try a different time.",
+            description: autoFindCourt
+              ? "No courts are available for the entire selected time range. Please try a different time."
+              : "The selected court is not available for this time range. Please try another court or time.",
         });
         return;
     }
 
     onBook({
-      courtId: availableCourt.id,
+      courtId: targetCourt.id,
       date: selectedDate,
       timeSlot: selectedTimeSlots.join(" & "),
       customerName,
@@ -133,7 +160,7 @@ export function RangeBookingDialog({
 
     toast({
       title: "Booking Confirmed!",
-      description: `${availableCourt.name} from ${startTimeValue} to ${endTimeValue} has been booked for ${customerName}.`,
+      description: `${targetCourt.name} from ${startTimeValue} to ${endTimeValue} has been booked for ${customerName}.`,
     });
     handleClose();
   };
@@ -149,11 +176,45 @@ export function RangeBookingDialog({
         <DialogHeader>
           <DialogTitle>Book by Time Range</DialogTitle>
           <DialogDescription>
-            Select a time range. The system will find an available court for you.
+            Select a time range. You can either pick a specific court or have the system find one for you.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <div className="flex items-center space-x-2">
+                <Switch 
+                    id="auto-find-court" 
+                    checked={autoFindCourt} 
+                    onCheckedChange={setAutoFindCourt}
+                />
+                <Label htmlFor="auto-find-court">Find an available court automatically</Label>
+            </div>
+            {!autoFindCourt && (
+                <FormField
+                    control={form.control}
+                    name="courtId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Court</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a court" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {courts.map(court => (
+                                        <SelectItem key={court.id} value={String(court.id)}>
+                                            {court.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            )}
             <div className="grid grid-cols-2 gap-4">
                 <FormField
                 control={form.control}
@@ -161,7 +222,7 @@ export function RangeBookingDialog({
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Start Time</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select" />
@@ -231,7 +292,7 @@ export function RangeBookingDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit">Find Court & Book</Button>
+              <Button type="submit">Book Time</Button>
             </DialogFooter>
           </form>
         </Form>
@@ -239,3 +300,5 @@ export function RangeBookingDialog({
     </Dialog>
   );
 }
+
+    
