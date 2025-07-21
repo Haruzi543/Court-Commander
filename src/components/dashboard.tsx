@@ -55,7 +55,7 @@ export function Dashboard() {
   const today = startOfToday();
 
   const handleTabChange = (tab: string) => {
-    if (user?.role !== 'admin' && tab !== 'schedule') {
+    if (user?.role !== 'admin' && (tab !== 'schedule' && tab !== 'my-bookings')) {
       return;
     }
     setActiveTab(tab);
@@ -186,6 +186,7 @@ export function Dashboard() {
                 <TabsContent value="arrivals">
                     <ArrivalManagement
                     bookings={dailyBookings}
+                    courts={courts}
                     onUpdateBookingStatus={updateBookingStatus}
                     />
                 </TabsContent>

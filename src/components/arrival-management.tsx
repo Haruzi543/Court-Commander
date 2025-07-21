@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useMemo } from "react";
-import type { Booking } from "@/lib/types";
+import type { Booking, Court } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,12 +20,17 @@ import { useDebounce } from "@/hooks/use-debounce";
 
 interface ArrivalManagementProps {
   bookings: Booking[];
+  courts: Court[];
   onUpdateBookingStatus: (bookingId: string, status: "booked" | "arrived") => void;
 }
 
-export function ArrivalManagement({ bookings, onUpdateBookingStatus }: ArrivalManagementProps) {
+export function ArrivalManagement({ bookings, courts, onUpdateBookingStatus }: ArrivalManagementProps) {
   const [searchTerm, setSearchTerm] = useDebounce("", 300);
   const { toast } = useToast();
+
+  const getCourtName = (courtId: number) => {
+    return courts.find(c => c.id === courtId)?.name || "Unknown";
+  }
 
   const upcomingBookings = useMemo(() => {
     return bookings
@@ -66,6 +72,7 @@ export function ArrivalManagement({ bookings, onUpdateBookingStatus }: ArrivalMa
             <TableHeader>
               <TableRow>
                 <TableHead>Time Slot</TableHead>
+                <TableHead>Court</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead className="text-right">Action</TableHead>
@@ -76,6 +83,7 @@ export function ArrivalManagement({ bookings, onUpdateBookingStatus }: ArrivalMa
                 upcomingBookings.map((booking) => (
                   <TableRow key={booking.id}>
                     <TableCell className="font-medium">{booking.timeSlot}</TableCell>
+                    <TableCell>{getCourtName(booking.courtId)}</TableCell>
                     <TableCell>{booking.customerName}</TableCell>
                     <TableCell>{booking.customerPhone}</TableCell>
                     <TableCell className="text-right">
@@ -85,7 +93,7 @@ export function ArrivalManagement({ bookings, onUpdateBookingStatus }: ArrivalMa
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No upcoming bookings found.
                   </TableCell>
                 </TableRow>
