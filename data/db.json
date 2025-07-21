@@ -1,7 +1,5 @@
 {
-  "bookings": [
- 
-  ],
+  "bookings": [],
   "courts": [
     {
       "id": 1,
@@ -43,30 +41,13 @@
   "users": [
     {
       "id": "admin-user",
-      "email": "aekky@example.com",
-      "phone": "12345678",
+      "email": "aekky.computer.cs@gamil.com",
+      "phone": "55526477",
       "password": "55526477",
       "role": "admin",
-      "firstName": "Admin",
-      "lastName": "User"
-    },
-    {
-      "firstName": "aekoudone",
-      "lastName": "thebvongsa",
-      "email": "aekky.computer.cs@gmail.com",
-      "phone": "95694208",
-      "password": "55526477",
-      "role": "user",
-      "id": "2025-07-21T16:59:02.324Z0.8867075514781029"
-    },
-    {
-      "firstName": "andrew",
-      "lastName": "something",
-      "email": "test@gmail.com",
-      "phone": "95694208",
-      "password": "95694208",
-      "role": "user",
-      "id": "2025-07-21T17:05:10.326Z0.9313027641424383"
+      "firstName": "Aekoudone",
+      "lastName": "Thebvongsa"
     }
+  
   ]
 }
