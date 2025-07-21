@@ -38,7 +38,7 @@ export function Dashboard() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRangeBookingOpen, setIsRangeBookingOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("schedule");
 
   const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
