@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { BookingDialog } from "./booking-dialog";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { TennisBall } from "lucide-react";
 
 interface CourtScheduleTableProps {
   bookings: Booking[];
@@ -104,10 +106,54 @@ export function CourtScheduleTable({
   const getBookingDuration = (timeSlot: string) => {
     return timeSlot.split(" & ").length;
   }
+  
+  const renderSlot = (court: Court, timeSlot: string) => {
+    const booking = getBookingForSlot(court.id, timeSlot);
+     if (booking && booking.timeSlot.split(" & ")[0] !== timeSlot) {
+        return null;
+    }
+
+    if (booking) {
+        const duration = getBookingDuration(booking.timeSlot);
+        return (
+            <div
+                className={cn(
+                    "flex h-full w-full flex-col items-center justify-center rounded-md p-2 text-center min-h-[50px] col-span-2",
+                    booking.status === 'booked' && "bg-accent/20 text-accent-foreground",
+                    booking.status === 'arrived' && "bg-primary/20 text-primary-foreground",
+                    isAdmin ? "cursor-pointer" : "cursor-not-allowed"
+                )}
+                style={{ gridRow: `span ${duration}` }}
+                onClick={() => handleBookingClick(booking)}
+            >
+                {isAdmin ? (
+                    <>
+                        <p className="font-semibold">{booking.customerName}</p>
+                        <Badge variant="secondary" className="mt-1">{booking.status}</Badge>
+                    </>
+                ) : (
+                    <p className="font-semibold text-transparent select-none">Booked</p>
+                )}
+            </div>
+        )
+    }
+
+    return (
+        <Button
+            variant={isSlotSelected(court.id, timeSlot) ? "default" : "outline"}
+            size="sm"
+            className="w-full h-full min-h-[50px]"
+            onClick={() => handleSlotClick(court.id, timeSlot)}
+        >
+            {isSlotSelected(court.id, timeSlot) ? 'Selected' : 'Available'}
+        </Button>
+    )
+  }
 
   return (
     <>
-      <div className="rounded-md border">
+      {/* Desktop View: Table */}
+      <div className="hidden md:block rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -176,6 +222,59 @@ export function CourtScheduleTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Mobile View: Accordion */}
+      <div className="md:hidden">
+        <Accordion type="single" collapsible className="w-full" defaultValue={`court-${courts[0]?.id}`}>
+            {courts.map(court => (
+                <AccordionItem value={`court-${court.id}`} key={court.id}>
+                    <AccordionTrigger className="text-lg font-semibold">
+                       <div className="flex items-center gap-3">
+                         <TennisBall className="text-primary"/> 
+                         {court.name}
+                       </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        {selectedSlots.courtId === court.id && selectedSlots.timeSlots.length > 0 && (
+                            <Button size="sm" className="w-full mb-4" onClick={handleOpenBookingDialog}>
+                                Book {selectedSlots.timeSlots.length} selected slot(s)
+                            </Button>
+                        )}
+                        <div className="space-y-2">
+                          {timeSlots.map(timeSlot => {
+                              const booking = getBookingForSlot(court.id, timeSlot);
+                              
+                              if (booking && booking.timeSlot.split(" & ")[0] !== timeSlot) {
+                                  return null;
+                              }
+                              
+                              if (booking) {
+                                  return (
+                                      <div key={timeSlot} className="grid grid-cols-3 items-center gap-2">
+                                          <div className="text-sm font-medium text-muted-foreground">{timeSlot}</div>
+                                          <div className="col-span-2">
+                                            {renderSlot(court, timeSlot)}
+                                          </div>
+                                      </div>
+                                  )
+                              }
+
+                              return (
+                                <div key={timeSlot} className="grid grid-cols-3 items-center gap-2">
+                                  <div className="text-sm font-medium">{timeSlot}</div>
+                                  <div className="col-span-2">
+                                    {renderSlot(court, timeSlot)}
+                                  </div>
+                                </div>
+                              )
+                          })}
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+            ))}
+        </Accordion>
+      </div>
+
       {selectedSlots.courtId !== -1 && selectedSlots.timeSlots.length > 0 && courts.find(c => c.id === selectedSlots.courtId) && (
         <BookingDialog
           isOpen={bookingDialogOpen}
