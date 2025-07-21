@@ -118,7 +118,7 @@ export function CourtScheduleTable({
         return (
             <div
                 className={cn(
-                    "flex h-full w-full flex-col items-center justify-center rounded-md p-2 text-center min-h-[50px] col-span-2",
+                    "flex h-full w-full flex-col items-center justify-center rounded-md p-2 text-center min-h-[50px]",
                     booking.status === 'booked' && "bg-accent/20 text-accent-foreground",
                     booking.status === 'arrived' && "bg-primary/20 text-primary-foreground",
                     isAdmin ? "cursor-pointer" : "cursor-not-allowed"
