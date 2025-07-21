@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // Exclude bcrypt from server-side bundling
+    if (isServer) {
+        config.externals.push('bcrypt');
+    }
+    return config;
+  }
 };
 
 export default nextConfig;
