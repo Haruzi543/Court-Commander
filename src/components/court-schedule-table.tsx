@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookingDialog } from "./booking-dialog";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 
 interface CourtScheduleTableProps {
   bookings: Booking[];
@@ -34,6 +36,8 @@ export function CourtScheduleTable({
 }: CourtScheduleTableProps) {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<{ courtId: number; timeSlots: string[] }>({ courtId: -1, timeSlots: [] });
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   const handleSlotClick = (courtId: number, timeSlot: string) => {
     if (selectedSlots.courtId !== courtId && selectedSlots.courtId !== -1) {
@@ -81,6 +85,7 @@ export function CourtScheduleTable({
   }
 
   const handleBookingClick = (booking: Booking) => {
+    if (!isAdmin) return;
     if (booking.status === 'booked') {
       onNavigateToTab('arrivals');
     } else if (booking.status === 'arrived') {
@@ -133,14 +138,21 @@ export function CourtScheduleTable({
                       <TableCell key={court.id} rowSpan={duration} className="align-top p-1">
                         <div
                           className={cn(
-                            "flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-md p-2 text-center min-h-[50px]",
+                            "flex h-full w-full flex-col items-center justify-center rounded-md p-2 text-center min-h-[50px]",
                             booking.status === 'booked' && "bg-accent/20 text-accent-foreground",
                             booking.status === 'arrived' && "bg-primary/20 text-primary-foreground",
+                            isAdmin ? "cursor-pointer" : "cursor-not-allowed"
                           )}
                           onClick={() => handleBookingClick(booking)}
                         >
-                          <p className="font-semibold">{booking.customerName}</p>
-                          <Badge variant="secondary" className="mt-1">{booking.status}</Badge>
+                          {isAdmin ? (
+                            <>
+                              <p className="font-semibold">{booking.customerName}</p>
+                              <Badge variant="secondary" className="mt-1">{booking.status}</Badge>
+                            </>
+                          ) : (
+                            <p className="font-semibold text-transparent select-none">Booked</p>
+                          )}
                         </div>
                       </TableCell>
                     )
