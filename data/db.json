@@ -41,9 +41,9 @@
   "users": [
     {
       "id": "admin-user",
-      "email": "aekky.computer.cs@gamil.com",
+      "email": "aekky.computer.cs@gmail.com",
       "phone": "55526477",
-      "password": "55526477",
+      "password": "aekky55526477",
       "role": "admin",
       "firstName": "Aekoudone",
       "lastName": "Thebvongsa"
