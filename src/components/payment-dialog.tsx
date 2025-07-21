@@ -72,11 +72,11 @@ export function PaymentDialog({ isOpen, onClose, booking, court, rate, onComplet
           </div>
            <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Hourly Rate:</span>
-            <span className="font-medium">${rate.toFixed(2)}</span>
+            <span className="font-medium">₭{rate.toFixed(0)}</span>
           </div>
           <div className="flex justify-between items-center text-lg">
             <span className="font-semibold">Total Cost:</span>
-            <span className="font-bold text-primary">${totalCost.toFixed(2)}</span>
+            <span className="font-bold text-primary">₭{totalCost.toFixed(0)}</span>
           </div>
         </div>
         <DialogFooter className="sm:justify-between gap-2">

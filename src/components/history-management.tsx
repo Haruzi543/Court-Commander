@@ -44,7 +44,7 @@ export function HistoryManagement({ bookings, courts, courtRates }: HistoryManag
   const calculateCost = (booking: Booking) => {
     const rate = courtRates[booking.courtId] || 0;
     const duration = booking.timeSlot.split(" & ").length;
-    return (rate * duration).toFixed(2);
+    return (rate * duration).toFixed(0);
   };
 
   return (
@@ -84,7 +84,7 @@ export function HistoryManagement({ bookings, courts, courtRates }: HistoryManag
                     <TableCell>{getCourtById(booking.courtId)?.name}</TableCell>
                     <TableCell>{booking.customerName}</TableCell>
                     <TableCell>{booking.customerPhone}</TableCell>
-                    <TableCell className="text-right font-mono">${calculateCost(booking)}</TableCell>
+                    <TableCell className="text-right font-mono">₭{calculateCost(booking)}</TableCell>
                   </TableRow>
                 ))
               ) : (

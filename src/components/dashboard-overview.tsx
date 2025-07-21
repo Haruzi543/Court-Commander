@@ -65,7 +65,7 @@ export function DashboardOverview({ bookings, courtRates, selectedDate }: Dashbo
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <StatCard title="Total Bookings" value={stats.totalBookings} icon={Book} />
                 <StatCard title="Arrived / Pending Payment" value={stats.arrivedCustomers} icon={CheckCircle} />
-                <StatCard title="Total Revenue" value={`$${stats.dailyRevenue.toFixed(2)}`} icon={DollarSign} />
+                <StatCard title="Total Revenue" value={`₭${stats.dailyRevenue.toFixed(0)}`} icon={DollarSign} />
             </div>
         </CardContent>
       </Card>
