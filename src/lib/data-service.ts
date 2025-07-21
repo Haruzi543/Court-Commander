@@ -36,9 +36,9 @@ async function initializeDefaultData(existingBookings: Booking[], existingUsers:
         return acc;
     }, {} as CourtRate);
     
-    const adminUser: User = { id: "admin-user", username: "aekky", password: "55526477", role: "admin" };
+    const adminUser: User = { id: "admin-user", email: "aekky@example.com", phone: "12345678", password: "55526477", role: "admin" };
     
-    const users = [adminUser, ...existingUsers.filter(u => u.username !== 'aekky')];
+    const users = [adminUser, ...existingUsers.filter(u => u.email !== 'aekky@example.com')];
 
     const defaultData: DbData = {
       bookings: existingBookings,
@@ -67,15 +67,15 @@ export async function getData() {
   return await readData();
 }
 
-export async function getUser(username: string): Promise<User | undefined> {
+export async function getUserByEmail(email: string): Promise<User | undefined> {
     const data = await readData();
-    return data.users.find(u => u.username === username);
+    return data.users.find(u => u.email === email);
 }
 
 export async function addUser(newUserData: NewUser): Promise<User> {
     const data = await readData();
-    if (data.users.some(u => u.username === newUserData.username)) {
-        throw new Error("Username already exists.");
+    if (data.users.some(u => u.email === newUserData.email)) {
+        throw new Error("Email already exists.");
     }
     const newUser: User = {
         ...newUserData,

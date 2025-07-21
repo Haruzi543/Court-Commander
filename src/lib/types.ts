@@ -20,7 +20,8 @@ export interface CourtRate {
 
 export interface User {
   id: string;
-  username: string;
+  email: string;
+  phone: string;
   password: string;
   role: "admin" | "user";
 }

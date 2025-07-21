@@ -1,3 +1,4 @@
+
 {
   "bookings": [
     {
@@ -60,7 +61,8 @@
   "users": [
     {
       "id": "admin-user",
-      "username": "aekky",
+      "email": "aekky@example.com",
+      "phone": "12345678",
       "password": "55526477",
       "role": "admin"
     }

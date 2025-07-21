@@ -3,13 +3,13 @@
 
 import { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { getUser } from "@/lib/data-service";
+import { getUserByEmail } from "@/lib/data-service";
 import type { User } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -28,13 +28,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (username: string, password: string) => {
-    const foundUser = await getUser(username);
+  const login = async (email: string, password: string) => {
+    const foundUser = await getUserByEmail(email);
     if (foundUser && foundUser.password === password) {
       sessionStorage.setItem("user", JSON.stringify(foundUser));
       setUser(foundUser);
     } else {
-      throw new Error("Invalid username or password");
+      throw new Error("Invalid email or password");
     }
   };
 

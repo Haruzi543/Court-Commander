@@ -75,7 +75,7 @@ export function Dashboard() {
           <div className="flex items-center gap-3">
             <Logo className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold tracking-tight">Court Commander</h1>
-            <span className="text-sm text-muted-foreground mt-1">({user.username} - {user.role})</span>
+            <span className="text-sm text-muted-foreground mt-1">({user.email} - {user.role})</span>
           </div>
           <div className="flex items-center gap-2">
             {user.role === 'admin' && (
