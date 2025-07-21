@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourtScheduleTable } from "@/components/court-schedule-table";
 import { ArrivalManagement } from "@/components/arrival-management";
+import { PaymentManagement } from "@/components/payment-management";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { Logo } from "@/components/icons";
 import { COURTS } from "@/lib/constants";
@@ -24,6 +25,7 @@ export function Dashboard() {
   const { bookings, courtRates, addBooking, updateBookingStatus, deleteBooking, updateCourtRates, isLoaded } = useBookings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [activeTab, setActiveTab] = useState("schedule");
 
   const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
@@ -57,11 +59,12 @@ export function Dashboard() {
       </header>
 
       <main className="container mx-auto p-4 md:p-8">
-        <Tabs defaultValue="schedule">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
-              <TabsTrigger value="schedule">Court Schedule</TabsTrigger>
-              <TabsTrigger value="arrivals">Arrival Management</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 md:w-[400px]">
+              <TabsTrigger value="schedule">Schedule</TabsTrigger>
+              <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
+              <TabsTrigger value="payments">Payments</TabsTrigger>
             </TabsList>
             <Popover>
               <PopoverTrigger asChild>
@@ -98,9 +101,9 @@ export function Dashboard() {
                   courts={COURTS}
                   courtRates={courtRates}
                   onBookSlot={addBooking}
-                  onUpdateBooking={updateBookingStatus}
                   onDeleteBooking={deleteBooking}
                   selectedDate={formattedDate}
+                  onNavigateToTab={setActiveTab}
                 />
               </CardContent>
             </Card>
@@ -109,6 +112,14 @@ export function Dashboard() {
             <ArrivalManagement
               bookings={dailyBookings}
               onUpdateBookingStatus={updateBookingStatus}
+            />
+          </TabsContent>
+           <TabsContent value="payments">
+            <PaymentManagement
+              bookings={dailyBookings}
+              courts={COURTS}
+              courtRates={courtRates}
+              onDeleteBooking={deleteBooking}
             />
           </TabsContent>
         </Tabs>

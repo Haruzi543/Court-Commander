@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookingDialog } from "./booking-dialog";
-import { PaymentDialog } from "./payment-dialog";
 import { cn } from "@/lib/utils";
 
 interface CourtScheduleTableProps {
@@ -22,45 +21,34 @@ interface CourtScheduleTableProps {
   courts: Court[];
   courtRates: CourtRate;
   onBookSlot: (booking: Omit<Booking, "id" | "status">) => void;
-  onUpdateBooking: (bookingId: string, status: "booked" | "arrived") => void;
   onDeleteBooking: (bookingId: string) => void;
   selectedDate: string;
+  onNavigateToTab: (tab: "arrivals" | "payments") => void;
 }
 
 export function CourtScheduleTable({
   bookings,
   courts,
-  courtRates,
   onBookSlot,
-  onUpdateBooking,
-  onDeleteBooking,
   selectedDate,
+  onNavigateToTab
 }: CourtScheduleTableProps) {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-
-  // State for multi-slot selection
   const [selectedSlots, setSelectedSlots] = useState<{ courtId: number; timeSlots: string[] }>({ courtId: -1, timeSlots: [] });
 
   const handleSlotClick = (courtId: number, timeSlot: string) => {
-    // If a different court is selected, reset selection
     if (selectedSlots.courtId !== courtId) {
       setSelectedSlots({ courtId, timeSlots: [timeSlot] });
       return;
     }
 
-    // If the same court is selected
     const newTimeSlots = [...selectedSlots.timeSlots];
     const slotIndex = newTimeSlots.indexOf(timeSlot);
 
     if (slotIndex > -1) {
-      // If slot is already selected, deselect it and all slots after it
       newTimeSlots.splice(slotIndex);
     } else {
-      // If slot is not selected, add it
       newTimeSlots.push(timeSlot);
-      // Sort to ensure continuity
       newTimeSlots.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
     }
     
@@ -78,10 +66,13 @@ export function CourtScheduleTable({
     setSelectedSlots({ courtId: -1, timeSlots: [] });
   }
 
-  const handleOpenPaymentDialog = (booking: Booking) => {
-    setSelectedBooking(booking);
-    setPaymentDialogOpen(true);
-  };
+  const handleBookingClick = (booking: Booking) => {
+    if (booking.status === 'booked') {
+      onNavigateToTab('arrivals');
+    } else if (booking.status === 'arrived') {
+      onNavigateToTab('payments');
+    }
+  }
 
   const getBookingForSlot = (courtId: number, timeSlot: string) => {
     return bookings.find((b) => b.courtId === courtId && b.timeSlot.split(" & ")[0] <= timeSlot && timeSlot <= b.timeSlot.split(" & ").slice(-1)[0]);
@@ -119,7 +110,7 @@ export function CourtScheduleTable({
                 {courts.map((court) => {
                   const booking = getBookingForSlot(court.id, timeSlot);
                   if (booking && booking.timeSlot.split(" & ")[0] !== timeSlot) {
-                    return null; // This cell is part of a multi-hour booking, render nothing
+                    return null;
                   }
                   
                   if (booking) {
@@ -132,7 +123,7 @@ export function CourtScheduleTable({
                             booking.status === 'booked' && "bg-accent/20 text-accent-foreground",
                             booking.status === 'arrived' && "bg-primary/20 text-primary-foreground",
                           )}
-                          onClick={() => handleOpenPaymentDialog(booking)}
+                          onClick={() => handleBookingClick(booking)}
                         >
                           <p className="font-semibold">{booking.customerName}</p>
                           <Badge variant="secondary" className="mt-1">{booking.status}</Badge>
@@ -167,17 +158,6 @@ export function CourtScheduleTable({
           timeSlot={selectedSlots.timeSlots.join(" & ")}
           onBook={onBookSlot}
           selectedDate={selectedDate}
-        />
-      )}
-      {selectedBooking && (
-        <PaymentDialog
-          isOpen={paymentDialogOpen}
-          onClose={() => setPaymentDialogOpen(false)}
-          booking={selectedBooking}
-          court={courts.find(c => c.id === selectedBooking.courtId)!}
-          rate={courtRates[selectedBooking.courtId]}
-          onUpdateBooking={onUpdateBooking}
-          onDeleteBooking={onDeleteBooking}
         />
       )}
     </>
