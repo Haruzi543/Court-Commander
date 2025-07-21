@@ -41,7 +41,7 @@ export async function sendOtp(input: Omit<SendOtpInput, 'otp'>): Promise<SendOtp
 // Define the Genkit prompt for generating the OTP and email content
 const sendOtpPrompt = ai.definePrompt({
     name: 'sendOtpPrompt',
-    model: googleAI.model('gemini-1.5-flash-preview'),
+    model: googleAI.model('gemini-1.5-flash'),
     input: { schema: SendOtpInputSchema },
     output: { schema: SendOtpOutputSchema },
     prompt: `
