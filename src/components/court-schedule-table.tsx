@@ -24,6 +24,7 @@ interface CourtScheduleTableProps {
   onBookSlot: (booking: Omit<Booking, "id" | "status">) => void;
   onUpdateBooking: (bookingId: string, status: "booked" | "arrived") => void;
   onDeleteBooking: (bookingId: string) => void;
+  selectedDate: string;
 }
 
 export function CourtScheduleTable({
@@ -33,6 +34,7 @@ export function CourtScheduleTable({
   onBookSlot,
   onUpdateBooking,
   onDeleteBooking,
+  selectedDate,
 }: CourtScheduleTableProps) {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -110,6 +112,7 @@ export function CourtScheduleTable({
           court={courts.find(c => c.id === selectedSlot.courtId)!}
           timeSlot={selectedSlot.timeSlot}
           onBook={onBookSlot}
+          selectedDate={selectedDate}
         />
       )}
       {selectedBooking && (

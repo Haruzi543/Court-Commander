@@ -1,21 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { Settings, Loader2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { format } from "date-fns";
+import { Settings, Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { useBookings } from "@/hooks/use-bookings";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourtScheduleTable } from "@/components/court-schedule-table";
 import { ArrivalManagement } from "@/components/arrival-management";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { Logo } from "@/components/icons";
-import type { Booking, Court } from "@/lib/types";
 import { COURTS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 export function Dashboard() {
   const { bookings, courtRates, addBooking, updateBookingStatus, deleteBooking, updateCourtRates, isLoaded } = useBookings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const formattedDate = format(selectedDate, "yyyy-MM-dd");
+
+  const dailyBookings = useMemo(() => {
+    return bookings.filter(b => b.date === formattedDate);
+  }, [bookings, formattedDate]);
 
   if (!isLoaded) {
     return (
@@ -42,30 +56,55 @@ export function Dashboard() {
 
       <main className="container mx-auto p-4 md:p-8">
         <Tabs defaultValue="schedule">
-          <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
-            <TabsTrigger value="schedule">Court Schedule</TabsTrigger>
-            <TabsTrigger value="arrivals">Arrival Management</TabsTrigger>
-          </TabsList>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+              <TabsTrigger value="schedule">Court Schedule</TabsTrigger>
+              <TabsTrigger value="arrivals">Arrival Management</TabsTrigger>
+            </TabsList>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal md:w-[280px]",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
           <TabsContent value="schedule">
             <Card>
               <CardHeader>
-                <CardTitle>Today's Schedule</CardTitle>
+                <CardTitle>Schedule for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <CourtScheduleTable
-                  bookings={bookings}
+                  bookings={dailyBookings}
                   courts={COURTS}
                   courtRates={courtRates}
                   onBookSlot={addBooking}
                   onUpdateBooking={updateBookingStatus}
                   onDeleteBooking={deleteBooking}
+                  selectedDate={formattedDate}
                 />
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="arrivals">
             <ArrivalManagement
-              bookings={bookings}
+              bookings={dailyBookings}
               onUpdateBookingStatus={updateBookingStatus}
             />
           </TabsContent>

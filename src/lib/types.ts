@@ -6,6 +6,7 @@ export interface Court {
 export interface Booking {
   id: string;
   courtId: number;
+  date: string; // YYYY-MM-DD format
   timeSlot: string;
   customerName: string;
   customerPhone: string;

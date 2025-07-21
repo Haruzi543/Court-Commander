@@ -29,15 +29,16 @@ interface BookingDialogProps {
   onClose: () => void;
   court: Court;
   timeSlot: string;
+  selectedDate: string;
   onBook: (booking: Omit<Booking, "id" | "status">) => void;
 }
 
 const formSchema = z.object({
   customerName: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  customerPhone: z.string().min(7, { message: "Please enter a valid phone number." }),
+  customerPhone: z.string().min(1, { message: "Phone number is required" }),
 });
 
-export function BookingDialog({ isOpen, onClose, court, timeSlot, onBook }: BookingDialogProps) {
+export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, onBook }: BookingDialogProps) {
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,6 +51,7 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, onBook }: Book
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     onBook({
       courtId: court.id,
+      date: selectedDate,
       timeSlot,
       ...values,
     });

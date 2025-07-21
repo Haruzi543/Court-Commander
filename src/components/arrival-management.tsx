@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import type { Booking } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Search } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface ArrivalManagementProps {
   bookings: Booking[];
@@ -22,7 +23,7 @@ interface ArrivalManagementProps {
 }
 
 export function ArrivalManagement({ bookings, onUpdateBookingStatus }: ArrivalManagementProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useDebounce("", 300);
   const { toast } = useToast();
 
   const upcomingBookings = useMemo(() => {
@@ -48,12 +49,12 @@ export function ArrivalManagement({ bookings, onUpdateBookingStatus }: ArrivalMa
     <Card>
       <CardHeader>
         <CardTitle>Manage Arrivals</CardTitle>
-        <CardDescription>Search for bookings and mark customers as arrived.</CardDescription>
+        <CardDescription>Search for bookings on the selected date and mark customers as arrived.</CardDescription>
         <div className="relative pt-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name or phone..."
-            value={searchTerm}
+            defaultValue={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9"
           />
