@@ -38,8 +38,6 @@ export function PaymentDialog({ isOpen, onClose, booking, court, rate, onComplet
   };
   
   const handleCancelBooking = () => {
-    // In a real app, you might want a different flow for cancellation
-    // For now, we'll just treat it as a completed (and perhaps unpaid) booking
     onCompleteBooking(booking.id);
     toast({
       title: "Booking Cancelled",

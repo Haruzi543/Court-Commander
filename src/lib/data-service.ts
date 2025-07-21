@@ -1,4 +1,3 @@
-
 'use server';
 
 import { promises as fs } from 'fs';
@@ -17,26 +16,26 @@ interface DbData {
 
 async function readData(): Promise<DbData> {
   try {
+    await fs.access(dataFilePath);
     const fileContent = await fs.readFile(dataFilePath, 'utf-8');
     const data = JSON.parse(fileContent) as DbData;
-    // Ensure all fields exist
-    if (!data.courts || !data.timeSlots || !data.courtRates) {
-        return await initializeDefaultData();
+    if (!data.courts || !data.timeSlots || !data.courtRates || !data.bookings) {
+        return await initializeDefaultData(data.bookings || []);
     }
     return data;
   } catch (error) {
-    return await initializeDefaultData();
+    return await initializeDefaultData([]);
   }
 }
 
-async function initializeDefaultData(): Promise<DbData> {
+async function initializeDefaultData(existingBookings: Booking[]): Promise<DbData> {
     const defaultRates = DEFAULT_COURTS.reduce((acc, court) => {
         acc[court.id] = DEFAULT_HOURLY_RATE;
         return acc;
     }, {} as CourtRate);
     
     const defaultData: DbData = {
-      bookings: [],
+      bookings: existingBookings,
       courts: DEFAULT_COURTS,
       timeSlots: DEFAULT_TIME_SLOTS,
       courtRates: defaultRates,
@@ -48,6 +47,8 @@ async function initializeDefaultData(): Promise<DbData> {
 
 async function writeData(data: DbData): Promise<void> {
   try {
+    const dir = path.dirname(dataFilePath);
+    await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
     console.error("Failed to write to data file", error);
@@ -71,7 +72,7 @@ export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>)
   return newBooking;
 }
 
-export async function updateBookingStatus(bookingId: string, status: Booking['status']): Promise<Booking> {
+export async function updateBookingStatus(bookingId: string, status: "booked" | "arrived"): Promise<Booking> {
   const data = await readData();
   const bookingIndex = data.bookings.findIndex(b => b.id === bookingId);
   if (bookingIndex === -1) {
@@ -93,18 +94,14 @@ export async function completeBooking(bookingId: string): Promise<Booking> {
     return data.bookings[bookingIndex];
 }
 
-export async function deleteBooking(bookingId: string): Promise<{ success: true }> {
-  const data = await readData();
-  data.bookings = data.bookings.filter(b => b.id !== bookingId);
-  await writeData(data);
-  return { success: true };
-}
-
 export async function updateCourtSettings(settings: {courts: Court[], timeSlots: string[], rates: CourtRate}): Promise<DbData> {
   const data = await readData();
-  data.courts = settings.courts;
-  data.timeSlots = settings.timeSlots;
-  data.courtRates = settings.rates;
-  await writeData(data);
-  return data;
+  const updatedData = {
+    ...data,
+    courts: settings.courts,
+    timeSlots: settings.timeSlots,
+    courtRates: settings.rates,
+  };
+  await writeData(updatedData);
+  return updatedData;
 }

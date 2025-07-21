@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useTransition } from "react";
@@ -39,7 +38,7 @@ export function useBookings() {
     });
   }, []);
 
-  const updateBookingStatus = useCallback((bookingId: string, status: "booked" | "arrived" | "completed") => {
+  const updateBookingStatus = useCallback((bookingId: string, status: "booked" | "arrived") => {
     startTransition(async () => {
       const updatedBooking = await updateBookingStatusAction(bookingId, status);
       setBookings((prev) =>

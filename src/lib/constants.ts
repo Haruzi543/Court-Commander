@@ -1,4 +1,3 @@
-
 // This file is kept for default values if the data file is ever corrupted or deleted.
 // The primary source of truth for courts and time slots is now data/db.json.
 

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -51,22 +50,18 @@ export function CourtScheduleTable({
     const slotIndex = newTimeSlots.indexOf(timeSlot);
 
     if (slotIndex > -1) {
-      // If the clicked slot is the last one in the selection, deselect it
       if (timeSlot === newTimeSlots[newTimeSlots.length - 1]) {
         newTimeSlots.pop();
       } else {
-        // If it's in the middle, deselect it and all subsequent slots
         newTimeSlots.splice(slotIndex);
       }
     } else {
-      // Check if it's consecutive to the last selected slot
       const lastSlot = newTimeSlots[newTimeSlots.length - 1];
       const lastSlotIndex = timeSlots.indexOf(lastSlot);
       const currentSlotIndex = timeSlots.indexOf(timeSlot);
       if (currentSlotIndex === lastSlotIndex + 1) {
           newTimeSlots.push(timeSlot);
       } else {
-          // If not consecutive, start a new selection
           newTimeSlots = [timeSlot];
       }
     }
