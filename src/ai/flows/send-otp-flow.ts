@@ -17,6 +17,7 @@ const SendOtpInputSchema = z.object({
   firstName: z.string().describe('The first name of the user.'),
   lastName: z.string().describe('The last name of the user.'),
   email: z.string().email().describe('The email address of the user.'),
+  otp: z.string().length(6).describe('The 6-digit one-time password.'),
 });
 export type SendOtpInput = z.infer<typeof SendOtpInputSchema>;
 
@@ -30,8 +31,9 @@ export type SendOtpOutput = z.infer<typeof SendOtpOutputSchema>;
 
 
 // Exported wrapper function that calls the Genkit flow
-export async function sendOtp(input: SendOtpInput): Promise<SendOtpOutput> {
-  return sendOtpFlow(input);
+export async function sendOtp(input: Omit<SendOtpInput, 'otp'>): Promise<SendOtpOutput> {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  return sendOtpFlow({ ...input, otp });
 }
 
 
@@ -42,21 +44,20 @@ const sendOtpPrompt = ai.definePrompt({
     output: { schema: SendOtpOutputSchema },
     prompt: `
       You are an authentication assistant for an app named "Court Commander".
-      Your task is to generate a one-time password (OTP) and an email body for user verification.
+      Your task is to generate an email body for user verification using the provided One-Time Password (OTP).
 
       User Details:
       - Name: {{{firstName}}} {{{lastName}}}
       - Email: {{{email}}}
+      - OTP: {{{otp}}}
 
       Instructions:
-      1. Generate a random 6-digit numerical OTP.
-      2. Create a friendly and professional email body that includes the OTP.
+      1. Create a friendly and professional email body that includes the provided OTP.
          - The email should greet the user by their first name.
-         - It should clearly state the OTP.
-         - It should mention that the OTP is for verifying their account with Court Commander.
-         - It must include the line "If you did not request this, please ignore this email."
-
-      Set the generated OTP and the email body in the output fields.
+         - It should clearly state: "Your verification code for Court Commander is: {{{otp}}}".
+         - It must include the line: "If you did not request this, please ignore this email."
+      2. Set the 'otp' field in your output to be the same as the input OTP: {{{otp}}}.
+      3. Set the 'emailBody' field in your output to the email content you just created.
     `,
 });
 
@@ -88,3 +89,5 @@ const sendOtpFlow = ai.defineFlow(
     return output;
   }
 );
+
+    
