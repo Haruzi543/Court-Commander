@@ -57,9 +57,9 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
   });
 
   useEffect(() => {
-    if (isOpen && user && user.role === 'user') {
-      form.setValue('customerName', `${user.firstName} ${user.lastName}`);
-      form.setValue('customerPhone', user.phone);
+    if (isOpen && user) {
+      form.setValue('customerName', user.role === 'admin' ? '' : `${user.firstName} ${user.lastName}`);
+      form.setValue('customerPhone', user.role === 'admin' ? '' : user.phone);
     }
   }, [isOpen, user, form]);
 
@@ -107,9 +107,8 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
     setCountdown(60);
     onClose();
   };
-
+  
   const isUser = user?.role === 'user';
-
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
