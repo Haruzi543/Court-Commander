@@ -38,13 +38,45 @@ export function CourtScheduleTable({
 }: CourtScheduleTableProps) {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<{ courtId: number; timeSlot: string } | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  const handleOpenBookingDialog = (courtId: number, timeSlot: string) => {
-    setSelectedSlot({ courtId, timeSlot });
-    setBookingDialogOpen(true);
+  // State for multi-slot selection
+  const [selectedSlots, setSelectedSlots] = useState<{ courtId: number; timeSlots: string[] }>({ courtId: -1, timeSlots: [] });
+
+  const handleSlotClick = (courtId: number, timeSlot: string) => {
+    // If a different court is selected, reset selection
+    if (selectedSlots.courtId !== courtId) {
+      setSelectedSlots({ courtId, timeSlots: [timeSlot] });
+      return;
+    }
+
+    // If the same court is selected
+    const newTimeSlots = [...selectedSlots.timeSlots];
+    const slotIndex = newTimeSlots.indexOf(timeSlot);
+
+    if (slotIndex > -1) {
+      // If slot is already selected, deselect it and all slots after it
+      newTimeSlots.splice(slotIndex);
+    } else {
+      // If slot is not selected, add it
+      newTimeSlots.push(timeSlot);
+      // Sort to ensure continuity
+      newTimeSlots.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
+    }
+    
+    setSelectedSlots({ courtId, timeSlots: newTimeSlots });
   };
+  
+  const handleOpenBookingDialog = () => {
+    if (selectedSlots.timeSlots.length > 0) {
+      setBookingDialogOpen(true);
+    }
+  };
+  
+  const handleCloseBookingDialog = () => {
+    setBookingDialogOpen(false);
+    setSelectedSlots({ courtId: -1, timeSlots: [] });
+  }
 
   const handleOpenPaymentDialog = (booking: Booking) => {
     setSelectedBooking(booking);
@@ -52,8 +84,16 @@ export function CourtScheduleTable({
   };
 
   const getBookingForSlot = (courtId: number, timeSlot: string) => {
-    return bookings.find((b) => b.courtId === courtId && b.timeSlot === timeSlot);
+    return bookings.find((b) => b.courtId === courtId && b.timeSlot.split(" & ")[0] <= timeSlot && timeSlot <= b.timeSlot.split(" & ").slice(-1)[0]);
   };
+
+  const isSlotSelected = (courtId: number, timeSlot: string) => {
+    return selectedSlots.courtId === courtId && selectedSlots.timeSlots.includes(timeSlot);
+  };
+
+  const getBookingDuration = (timeSlot: string) => {
+    return timeSlot.split(" & ").length;
+  }
 
   return (
     <>
@@ -63,7 +103,12 @@ export function CourtScheduleTable({
             <TableRow>
               <TableHead className="w-[120px]">Time</TableHead>
               {courts.map((court) => (
-                <TableHead key={court.id}>{court.name}</TableHead>
+                <TableHead key={court.id} className="text-center">
+                  {court.name}
+                  {selectedSlots.courtId === court.id && selectedSlots.timeSlots.length > 0 && (
+                     <Button size="sm" className="ml-2" onClick={handleOpenBookingDialog}>Book ({selectedSlots.timeSlots.length})</Button>
+                  )}
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -73,12 +118,17 @@ export function CourtScheduleTable({
                 <TableCell className="font-medium">{timeSlot}</TableCell>
                 {courts.map((court) => {
                   const booking = getBookingForSlot(court.id, timeSlot);
-                  return (
-                    <TableCell key={court.id}>
-                      {booking ? (
+                  if (booking && booking.timeSlot.split(" & ")[0] !== timeSlot) {
+                    return null; // This cell is part of a multi-hour booking, render nothing
+                  }
+                  
+                  if (booking) {
+                    const duration = getBookingDuration(booking.timeSlot);
+                    return (
+                      <TableCell key={court.id} rowSpan={duration} className="align-top p-1">
                         <div
                           className={cn(
-                            "flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-md p-2 text-center",
+                            "flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-md p-2 text-center min-h-[50px]",
                             booking.status === 'booked' && "bg-accent/20 text-accent-foreground",
                             booking.status === 'arrived' && "bg-primary/20 text-primary-foreground",
                           )}
@@ -87,16 +137,20 @@ export function CourtScheduleTable({
                           <p className="font-semibold">{booking.customerName}</p>
                           <Badge variant="secondary" className="mt-1">{booking.status}</Badge>
                         </div>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleOpenBookingDialog(court.id, timeSlot)}
-                        >
-                          Book
-                        </Button>
-                      )}
+                      </TableCell>
+                    )
+                  }
+                  
+                  return (
+                    <TableCell key={court.id} className="p-1">
+                      <Button
+                        variant={isSlotSelected(court.id, timeSlot) ? "default" : "outline"}
+                        size="sm"
+                        className="w-full h-full min-h-[50px]"
+                        onClick={() => handleSlotClick(court.id, timeSlot)}
+                      >
+                        {isSlotSelected(court.id, timeSlot) ? 'Selected' : 'Available'}
+                      </Button>
                     </TableCell>
                   );
                 })}
@@ -105,12 +159,12 @@ export function CourtScheduleTable({
           </TableBody>
         </Table>
       </div>
-      {selectedSlot && (
+      {selectedSlots.courtId !== -1 && selectedSlots.timeSlots.length > 0 && (
         <BookingDialog
           isOpen={bookingDialogOpen}
-          onClose={() => setBookingDialogOpen(false)}
-          court={courts.find(c => c.id === selectedSlot.courtId)!}
-          timeSlot={selectedSlot.timeSlot}
+          onClose={handleCloseBookingDialog}
+          court={courts.find(c => c.id === selectedSlots.courtId)!}
+          timeSlot={selectedSlots.timeSlots.join(" & ")}
           onBook={onBookSlot}
           selectedDate={selectedDate}
         />

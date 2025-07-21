@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { format } from "date-fns";
+import { format, addDays, startOfToday } from "date-fns";
 import { Settings, Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { useBookings } from "@/hooks/use-bookings";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,8 @@ export function Dashboard() {
   const dailyBookings = useMemo(() => {
     return bookings.filter(b => b.date === formattedDate);
   }, [bookings, formattedDate]);
+  
+  const today = startOfToday();
 
   if (!isLoaded) {
     return (
@@ -79,6 +81,7 @@ export function Dashboard() {
                   mode="single"
                   selected={selectedDate}
                   onSelect={(date) => date && setSelectedDate(date)}
+                  disabled={{ before: today, after: addDays(today, 6) }}
                   initialFocus
                 />
               </PopoverContent>

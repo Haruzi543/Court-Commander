@@ -25,7 +25,7 @@ interface PaymentDialogProps {
 
 export function PaymentDialog({ isOpen, onClose, booking, court, rate, onUpdateBooking, onDeleteBooking }: PaymentDialogProps) {
   const { toast } = useToast();
-  const durationHours = 1; // Assuming 1-hour slots
+  const durationHours = booking.timeSlot.split(" & ").length;
   const totalCost = rate * durationHours;
 
   const handleMarkArrived = () => {
@@ -77,6 +77,10 @@ export function PaymentDialog({ isOpen, onClose, booking, court, rate, onUpdateB
           <div className="flex justify-between">
             <span className="text-muted-foreground">Status:</span>
             <span className="font-medium capitalize">{booking.status}</span>
+          </div>
+           <div className="flex justify-between">
+            <span className="text-muted-foreground">Duration:</span>
+            <span className="font-medium">{durationHours} hour(s)</span>
           </div>
           {booking.status === "arrived" && (
             <>
