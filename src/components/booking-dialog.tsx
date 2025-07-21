@@ -160,7 +160,7 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
                 </div>
               ) : (
                 <Button type="submit">
-                  {isUser ? 'Request Booking' : 'Book'}
+                  {isUser ? 'Request Booking ' : 'Book'}
                 </Button>
               )}
             </DialogFooter>
