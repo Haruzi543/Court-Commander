@@ -171,7 +171,7 @@ export function CourtScheduleTable({
           <TableBody>
             {timeSlots.map((timeSlot) => (
               <TableRow key={timeSlot}>
-                <TableCell className="font-medium">{timeSlot}</TableCell>
+                <TableCell className="font-semibold text-base text-foreground">{timeSlot}</TableCell>
                 {courts.map((court) => {
                   const booking = getBookingForSlot(court.id, timeSlot);
                   if (booking && booking.timeSlot.split(" & ")[0] !== timeSlot) {
@@ -251,7 +251,7 @@ export function CourtScheduleTable({
                               if (booking) {
                                   return (
                                       <div key={timeSlot} className="grid grid-cols-3 items-center gap-2">
-                                          <div className="text-sm font-medium text-muted-foreground">{timeSlot}</div>
+                                          <div className="font-semibold text-base text-muted-foreground">{timeSlot}</div>
                                           <div className="col-span-2">
                                             {renderSlot(court, timeSlot)}
                                           </div>
@@ -261,7 +261,7 @@ export function CourtScheduleTable({
 
                               return (
                                 <div key={timeSlot} className="grid grid-cols-3 items-center gap-2">
-                                  <div className="text-sm font-medium">{timeSlot}</div>
+                                  <div className="font-semibold text-base">{timeSlot}</div>
                                   <div className="col-span-2">
                                     {renderSlot(court, timeSlot)}
                                   </div>
