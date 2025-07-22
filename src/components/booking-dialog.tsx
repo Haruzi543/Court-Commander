@@ -78,7 +78,7 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
       });
     }
     return () => clearTimeout(timer);
-  }, [showConfirm, countdown, isUser]);
+  }, [showConfirm, countdown, isUser, toast, handleClose]);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     if (isUser && !showConfirm) {
