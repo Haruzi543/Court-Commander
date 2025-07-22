@@ -77,8 +77,8 @@ export function Dashboard() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Logo className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">Court Commander</h1>
-            {isAdmin && <span className="text-sm text-muted-foreground mt-1">({user.email} - {user.role})</span>}
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight">Court Commander</h1>
+            {isAdmin && <span className="text-sm text-muted-foreground mt-1 hidden md:inline">({user.email} - {user.role})</span>}
           </div>
           <div className="flex items-center gap-2">
             {!isAdmin && (
@@ -113,12 +113,12 @@ export function Dashboard() {
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             {isAdmin ? (
-               <TabsList className="grid w-full grid-cols-5 md:w-auto">
+               <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 md:w-auto">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="schedule">Schedule</TabsTrigger>
                 <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
-                <TabsTrigger value="payments">Payments</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
+                <TabsTrigger value="payments" className="hidden md:inline-flex">Payments</TabsTrigger>
+                <TabsTrigger value="history" className="hidden md:inline-flex">History</TabsTrigger>
               </TabsList>
             ) : (
                 <div className="flex-1">

@@ -8,6 +8,15 @@
       "customerPhone": "55526477",
       "id": "2025-07-21T20:35:25.957Z0.49179268890952854",
       "status": "booked"
+    },
+    {
+      "courtId": 2,
+      "date": "2025-07-22",
+      "timeSlot": "10:00 - 11:00 & 11:00 - 12:00 & 12:00 - 13:00",
+      "customerName": "Test User",
+      "customerPhone": "55526477",
+      "id": "2025-07-22T04:45:14.040Z0.26252748073741494",
+      "status": "booked"
     }
   ],
   "courts": [

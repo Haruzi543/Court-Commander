@@ -117,7 +117,7 @@ export default function SignupPage() {
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-3 mb-2">
             <Logo className="h-10 w-10 text-primary" />
-            <CardTitle className="text-3xl">Court Commander</CardTitle>
+            <CardTitle className="text-2xl md:text-3xl">Court Commander</CardTitle>
           </div>
           <CardDescription>
             {step === 1 ? "Create a new account to book courts" : "Enter the OTP sent to your email"}
