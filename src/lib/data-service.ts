@@ -85,6 +85,15 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
     return data.users.find(u => u.email === email);
 }
 
+export async function getUserByDetails(details: {firstName: string, lastName: string, phone: string}): Promise<User | undefined> {
+    const data = await readData();
+    return data.users.find(u => 
+        u.firstName === details.firstName && 
+        u.lastName === details.lastName && 
+        u.phone === details.phone
+    );
+}
+
 export async function addUser(newUserData: NewUser): Promise<User> {
     const data = await readData();
     if (data.users.some(u => u.email === newUserData.email)) {

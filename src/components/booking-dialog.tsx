@@ -97,7 +97,6 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
         courtId: court.id,
         date: selectedDate,
         timeSlot,
-        userEmail: user.email,
         ...values,
       });
       toast({

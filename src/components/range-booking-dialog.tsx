@@ -159,7 +159,6 @@ export function RangeBookingDialog({
       timeSlot: selectedTimeSlots.join(" & "),
       customerName,
       customerPhone,
-      userEmail: user.email,
     });
 
     toast({

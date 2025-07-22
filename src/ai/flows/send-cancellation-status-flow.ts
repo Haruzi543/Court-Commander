@@ -12,7 +12,7 @@
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
 import type { Booking, Court } from '@/lib/types';
-import { getUserByEmail } from '@/lib/data-service';
+import { getUserByDetails } from '@/lib/data-service';
 
 const SendCancellationStatusEmailInputSchema = z.object({
   booking: z.any(), // Zod doesn't have a clean way to handle the Booking type from another file
@@ -28,7 +28,16 @@ export type SendCancellationStatusEmailOutput = z.infer<typeof SendCancellationS
 
 export async function sendCancellationStatusEmail(input: SendCancellationStatusEmailInput): Promise<SendCancellationStatusEmailOutput> {
     const { booking, court, status } = input;
-    const user = await getUserByEmail(booking.userEmail);
+    
+    const nameParts = booking.customerName.split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+
+    const user = await getUserByDetails({
+        firstName,
+        lastName,
+        phone: booking.customerPhone
+    });
 
     if (!user) {
         throw new Error('User not found for this booking.');
