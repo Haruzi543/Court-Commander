@@ -26,6 +26,51 @@
       "customerPhone": "44",
       "id": "2025-07-22T05:24:32.054Z0.017991210645071698",
       "status": "completed"
+    },
+    {
+      "courtId": 1,
+      "date": "2025-07-22",
+      "timeSlot": "15:00 - 15:30 & 15:30 - 16:00 & 16:00 - 16:30 & 16:30 - 17:00",
+      "customerName": "aekky",
+      "customerPhone": "95694208",
+      "id": "2025-07-22T06:21:07.650Z0.9862893827910761",
+      "status": "booked"
+    },
+    {
+      "courtId": 2,
+      "date": "2025-07-22",
+      "timeSlot": "15:00 - 15:30 & 15:30 - 16:00 & 16:00 - 16:30 & 16:30 - 17:00",
+      "customerName": "Test User",
+      "customerPhone": "55526477",
+      "id": "2025-07-22T06:21:51.397Z0.4938905222113441",
+      "status": "booked"
+    },
+    {
+      "courtId": 3,
+      "date": "2025-07-22",
+      "timeSlot": "15:00 - 15:30 & 15:30 - 16:00 & 16:00 - 16:30 & 16:30 - 17:00",
+      "customerName": "Test User",
+      "customerPhone": "55526477",
+      "id": "2025-07-22T06:22:00.552Z0.26040074263292046",
+      "status": "booked"
+    },
+    {
+      "courtId": 4,
+      "date": "2025-07-22",
+      "timeSlot": "15:00 - 15:30 & 15:30 - 16:00 & 16:00 - 16:30 & 16:30 - 17:00",
+      "customerName": "Test User",
+      "customerPhone": "55526477",
+      "id": "2025-07-22T06:22:11.645Z0.79917561277557",
+      "status": "cancelled"
+    },
+    {
+      "courtId": 4,
+      "date": "2025-07-22",
+      "timeSlot": "15:00 - 15:30 & 15:30 - 16:00",
+      "customerName": "Test User",
+      "customerPhone": "55526477",
+      "id": "2025-07-22T06:25:07.969Z0.48018116387654564",
+      "status": "booked"
     }
   ],
   "courts": [
