@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -85,6 +85,14 @@ export function RangeBookingDialog({
   });
 
   const isUser = user?.role === 'user';
+  
+  const handleClose = useCallback(() => {
+    form.reset();
+    setShowConfirm(false);
+    setCountdown(60);
+    setBookingDetails(null);
+    onClose();
+  }, [form, onClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -189,19 +197,12 @@ export function RangeBookingDialog({
         setShowConfirm(true);
         setCountdown(60);
     } else {
-        setBookingDetails(values); // Set details so confirm can use it
+        // For admin, we use bookingDetails state to pass data to handleConfirmBooking
+        setBookingDetails(values); 
         // We need to use a timeout to allow state to update before calling confirm
         setTimeout(() => handleConfirmBooking(), 0);
     }
   };
-  
-  const handleClose = () => {
-    form.reset();
-    setShowConfirm(false);
-    setCountdown(60);
-    setBookingDetails(null);
-    onClose();
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -354,4 +355,3 @@ export function RangeBookingDialog({
     </Dialog>
   );
 }
-
