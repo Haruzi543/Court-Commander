@@ -70,28 +70,28 @@ export function HistoryManagement({ bookings, courts, courtRates }: HistoryManag
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Time Slot</TableHead>
-                <TableHead>Court</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount Paid</TableHead>
+                <TableHead className="px-2 md:px-4 text-xs md:text-sm">Date</TableHead>
+                <TableHead className="px-2 md:px-4 text-xs md:text-sm">Time</TableHead>
+                <TableHead className="hidden md:table-cell px-4 text-xs md:text-sm">Court</TableHead>
+                <TableHead className="hidden md:table-cell px-4 text-xs md:text-sm">Customer</TableHead>
+                <TableHead className="px-2 md:px-4 text-xs md:text-sm">Status</TableHead>
+                <TableHead className="text-right px-2 md:px-4 text-xs md:text-sm">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {completedBookings.length > 0 ? (
                 completedBookings.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{format(new Date(booking.date), "PPP")}</TableCell>
-                    <TableCell>{booking.timeSlot}</TableCell>
-                    <TableCell>{getCourtById(booking.courtId)?.name}</TableCell>
-                    <TableCell>{booking.customerName}</TableCell>
-                    <TableCell>
-                        <Badge variant={booking.status === 'cancelled' ? 'outline' : 'secondary'}>
+                  <TableRow key={booking.id} className="text-xs md:text-sm">
+                    <TableCell className="font-medium px-2 md:px-4 whitespace-nowrap">{format(new Date(booking.date), "MMM d, yyyy")}</TableCell>
+                    <TableCell className="px-2 md:px-4">{booking.timeSlot}</TableCell>
+                    <TableCell className="hidden md:table-cell px-4">{getCourtById(booking.courtId)?.name}</TableCell>
+                    <TableCell className="hidden md:table-cell px-4">{booking.customerName}</TableCell>
+                    <TableCell className="px-2 md:px-4">
+                        <Badge variant={booking.status === 'cancelled' ? 'outline' : 'secondary'} className="text-xs capitalize">
                            {booking.status}
                         </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-right font-mono px-2 md:px-4">
                         {booking.status === 'completed' ? `₭${calculateCost(booking)}` : calculateCost(booking)}
                     </TableCell>
                   </TableRow>
