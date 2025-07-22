@@ -17,6 +17,15 @@
       "customerPhone": "55526477",
       "id": "2025-07-22T04:45:14.040Z0.26252748073741494",
       "status": "cancelled"
+    },
+    {
+      "courtId": 1,
+      "date": "2025-07-22",
+      "timeSlot": "09:00 - 10:00",
+      "customerName": "happy",
+      "customerPhone": "44",
+      "id": "2025-07-22T05:24:32.054Z0.017991210645071698",
+      "status": "completed"
     }
   ],
   "courts": [
