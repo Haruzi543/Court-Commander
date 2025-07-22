@@ -116,8 +116,8 @@ export function Dashboard() {
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             {isAdmin ? (
-               <ScrollArea className="w-full md:w-auto">
-                <TabsList className="w-max">
+               <div className="w-full overflow-x-auto">
+                <TabsList className="flex-wrap h-auto md:h-10">
                     <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                     <TabsTrigger value="schedule">Schedule</TabsTrigger>
                     <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
@@ -132,7 +132,7 @@ export function Dashboard() {
                     </TabsTrigger>
                     <TabsTrigger value="history">History</TabsTrigger>
                 </TabsList>
-               </ScrollArea>
+               </div>
             ) : (
                 <div className="flex-1">
                     <h2 className="text-xl font-semibold">Booking Schedule</h2>
