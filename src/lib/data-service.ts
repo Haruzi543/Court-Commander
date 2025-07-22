@@ -142,8 +142,8 @@ export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>)
   // Check for conflicts before adding the new booking
   const newBookingSlots = newBookingData.timeSlot.split(" & ");
   const isConflict = data.bookings.some(booking => {
-    if (booking.courtId !== newBookingData.courtId || booking.date !== newBookingData.date) {
-      return false; // Not the same court or date, no conflict
+    if (booking.courtId !== newBookingData.courtId || booking.date !== newBookingData.date || booking.status === 'cancelled') {
+      return false; // Not the same court/date or the existing booking is cancelled, so no conflict
     }
     // Booking is for the same court on the same day, check for time overlap
     const existingBookingSlots = booking.timeSlot.split(" & ");
@@ -164,7 +164,7 @@ export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>)
   return newBooking;
 }
 
-export async function updateBookingStatus(bookingId: string, status: "booked" | "arrived"): Promise<Booking> {
+export async function updateBookingStatus(bookingId: string, status: Booking['status']): Promise<Booking> {
   const data = await readData();
   const bookingIndex = data.bookings.findIndex(b => b.id === bookingId);
   if (bookingIndex === -1) {

@@ -42,43 +42,9 @@ export function CourtScheduleTable({
   const isAdmin = user?.role === 'admin';
 
   const handleSlotClick = (courtId: number, timeSlot: string) => {
-    if (selectedSlots.courtId !== courtId && selectedSlots.courtId !== -1) {
-      setSelectedSlots({ courtId, timeSlots: [timeSlot] });
-      return;
-    }
-    
-    if (selectedSlots.courtId === -1) {
-      setSelectedSlots({ courtId, timeSlots: [timeSlot] });
-      return;
-    }
-
-    let newTimeSlots = [...selectedSlots.timeSlots];
-    const slotIndex = newTimeSlots.indexOf(timeSlot);
-
-    if (slotIndex > -1) {
-      if (timeSlot === newTimeSlots[newTimeSlots.length - 1]) {
-        newTimeSlots.pop();
-      } else {
-        newTimeSlots.splice(slotIndex);
-      }
-    } else {
-      const lastSlot = newTimeSlots[newTimeSlots.length - 1];
-      const lastSlotIndex = timeSlots.indexOf(lastSlot);
-      const currentSlotIndex = timeSlots.indexOf(timeSlot);
-      if (currentSlotIndex === lastSlotIndex + 1) {
-          newTimeSlots.push(timeSlot);
-      } else {
-          newTimeSlots = [timeSlot];
-      }
-    }
-    
-    setSelectedSlots({ courtId, timeSlots: newTimeSlots });
-  };
-  
-  const handleOpenBookingDialog = () => {
-    if (selectedSlots.timeSlots.length > 0) {
-      setBookingDialogOpen(true);
-    }
+    // A single click now opens the booking dialog for that slot immediately.
+    setSelectedSlots({ courtId, timeSlots: [timeSlot] });
+    setBookingDialogOpen(true);
   };
   
   const handleCloseBookingDialog = () => {
@@ -97,10 +63,6 @@ export function CourtScheduleTable({
 
   const getBookingForSlot = (courtId: number, timeSlot: string) => {
     return bookings.find((b) => b.courtId === courtId && b.timeSlot.split(" & ")[0] <= timeSlot && timeSlot <= b.timeSlot.split(" & ").slice(-1)[0]);
-  };
-
-  const isSlotSelected = (courtId: number, timeSlot: string) => {
-    return selectedSlots.courtId === courtId && selectedSlots.timeSlots.includes(timeSlot);
   };
 
   const getBookingDuration = (timeSlot: string) => {
@@ -140,12 +102,12 @@ export function CourtScheduleTable({
 
     return (
         <Button
-            variant={isSlotSelected(court.id, timeSlot) ? "default" : "outline"}
+            variant="outline"
             size="sm"
             className="w-full h-full min-h-[50px]"
             onClick={() => handleSlotClick(court.id, timeSlot)}
         >
-            {isSlotSelected(court.id, timeSlot) ? 'Selected' : 'Available'}
+            Available
         </Button>
     )
   }
@@ -161,9 +123,6 @@ export function CourtScheduleTable({
               {courts.map((court) => (
                 <TableHead key={court.id} className="text-center">
                   {court.name}
-                  {selectedSlots.courtId === court.id && selectedSlots.timeSlots.length > 0 && (
-                     <Button size="sm" className="ml-2" onClick={handleOpenBookingDialog}>Book ({selectedSlots.timeSlots.length})</Button>
-                  )}
                 </TableHead>
               ))}
             </TableRow>
@@ -207,12 +166,12 @@ export function CourtScheduleTable({
                   return (
                     <TableCell key={court.id} className="p-1">
                       <Button
-                        variant={isSlotSelected(court.id, timeSlot) ? "default" : "outline"}
+                        variant={"outline"}
                         size="sm"
                         className="w-full h-full min-h-[50px]"
                         onClick={() => handleSlotClick(court.id, timeSlot)}
                       >
-                        {isSlotSelected(court.id, timeSlot) ? 'Selected' : 'Available'}
+                        Available
                       </Button>
                     </TableCell>
                   );
@@ -235,13 +194,9 @@ export function CourtScheduleTable({
                        </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                        {selectedSlots.courtId === court.id && selectedSlots.timeSlots.length > 0 && (
-                            <Button size="sm" className="w-full mb-4" onClick={handleOpenBookingDialog}>
-                                Book {selectedSlots.timeSlots.length} selected slot(s)
-                            </Button>
-                        )}
                         <div className="space-y-2">
                           {timeSlots.map(timeSlot => {
+                              const key = `${court.id}-${timeSlot}`;
                               const booking = getBookingForSlot(court.id, timeSlot);
                               
                               if (booking && booking.timeSlot.split(" & ")[0] !== timeSlot) {
@@ -250,7 +205,7 @@ export function CourtScheduleTable({
                               
                               if (booking) {
                                   return (
-                                      <div key={timeSlot} className="grid grid-cols-3 items-center gap-2">
+                                      <div key={key} className="grid grid-cols-3 items-center gap-2">
                                           <div className="font-semibold text-base text-muted-foreground">{timeSlot}</div>
                                           <div className="col-span-2">
                                             {renderSlot(court, timeSlot)}
@@ -260,7 +215,7 @@ export function CourtScheduleTable({
                               }
 
                               return (
-                                <div key={timeSlot} className="grid grid-cols-3 items-center gap-2">
+                                <div key={key} className="grid grid-cols-3 items-center gap-2">
                                   <div className="font-semibold text-base">{timeSlot}</div>
                                   <div className="col-span-2">
                                     {renderSlot(court, timeSlot)}

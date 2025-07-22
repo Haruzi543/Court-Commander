@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useAuth } from "@/context/auth-context";
@@ -22,12 +22,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, Ticket } from "lucide-react";
+import type { Booking } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 export function MyBookings() {
-  const { user, logout } = useAuth();
-  const { bookings, courts, isLoaded } = useBookings();
+  const { user } = useAuth();
+  const { bookings, courts, isLoaded, updateBookingStatus } = useBookings();
+  const [cancellationRequest, setCancellationRequest] = useState<Booking | null>(null);
+  const { toast } = useToast();
 
   const myBookings = useMemo(() => {
     if (!user) return [];
@@ -42,6 +56,16 @@ export function MyBookings() {
     return court ? court.name : "Unknown Court";
   };
   
+  const handleRequestCancellation = () => {
+    if (!cancellationRequest) return;
+    updateBookingStatus(cancellationRequest.id, 'cancellation_requested');
+    toast({
+        title: "Cancellation Requested",
+        description: "Your request has been sent to the admin for approval."
+    });
+    setCancellationRequest(null);
+  }
+
   if (!isLoaded || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -49,8 +73,24 @@ export function MyBookings() {
       </div>
     );
   }
+  
+  const getStatusVariant = (status: Booking['status']) => {
+    switch (status) {
+        case 'completed':
+            return 'secondary';
+        case 'arrived':
+            return 'default';
+        case 'cancellation_requested':
+            return 'destructive';
+        case 'cancelled':
+            return 'outline';
+        default:
+            return 'outline';
+    }
+  }
 
   return (
+    <>
     <div className="flex min-h-screen flex-col bg-background">
        <header className="border-b sticky top-0 bg-background/95 backdrop-blur z-10">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -70,7 +110,7 @@ export function MyBookings() {
           <CardHeader>
             <CardTitle>Hello, {user.firstName}!</CardTitle>
             <CardDescription>
-              Here is a list of all your bookings.
+              Here is a list of all your bookings. You can request to cancel an upcoming booking.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -81,7 +121,8 @@ export function MyBookings() {
                     <TableHead>Date</TableHead>
                     <TableHead>Time Slot</TableHead>
                     <TableHead>Court</TableHead>
-                    <TableHead className="text-right">Status</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -93,28 +134,27 @@ export function MyBookings() {
                         </TableCell>
                         <TableCell>{booking.timeSlot}</TableCell>
                         <TableCell>{getCourtName(booking.courtId)}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
                           <Badge
-                            variant={
-                              booking.status === "completed"
-                                ? "secondary"
-                                : booking.status === "arrived"
-                                ? "default"
-                                : "outline"
-                            }
-                            className={
-                                booking.status === 'arrived' ? 'bg-primary/20 text-primary-foreground' : ''
-                            }
+                            variant={getStatusVariant(booking.status)}
+                            className={booking.status === 'arrived' ? 'bg-primary/20 text-primary-foreground' : ''}
                           >
-                            {booking.status}
+                            {booking.status.replace('_', ' ')}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {booking.status === 'booked' && (
+                            <Button variant="destructive" size="sm" onClick={() => setCancellationRequest(booking)}>
+                              Request Cancellation
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={4}
+                        colSpan={5}
                         className="h-24 text-center"
                       >
                         <div className="flex flex-col items-center gap-2">
@@ -134,5 +174,22 @@ export function MyBookings() {
         </Card>
       </main>
     </div>
+    <AlertDialog open={!!cancellationRequest} onOpenChange={() => setCancellationRequest(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action will send a cancellation request to the administrator. You cannot undo this. Are you sure you want to proceed?
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRequestCancellation}>
+                Yes, request cancellation
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

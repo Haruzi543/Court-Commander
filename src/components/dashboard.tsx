@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from "react";
 import { format, addDays, startOfToday } from "date-fns";
-import { Settings, Loader2, Calendar as CalendarIcon, Clock, LogOut, Ticket, User as UserIcon } from "lucide-react";
+import { Settings, Loader2, Calendar as CalendarIcon, Clock, LogOut, Ticket, User as UserIcon, Ban } from "lucide-react";
 import { useBookings } from "@/hooks/use-bookings";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -18,6 +18,7 @@ import { CourtScheduleTable } from "@/components/court-schedule-table";
 import { ArrivalManagement } from "@/components/arrival-management";
 import { PaymentManagement } from "@/components/payment-management";
 import { HistoryManagement } from "@/components/history-management";
+import { CancellationManagement } from "@/components/cancellation-management";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { RangeBookingDialog } from "@/components/range-booking-dialog";
 import { Logo } from "@/components/icons";
@@ -70,6 +71,7 @@ export function Dashboard() {
   }
   
   const isAdmin = user.role === 'admin';
+  const cancellationRequests = dailyBookings.filter(b => b.status === 'cancellation_requested').length;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -113,12 +115,20 @@ export function Dashboard() {
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             {isAdmin ? (
-               <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 md:w-auto">
+               <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 md:w-auto">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="schedule">Schedule</TabsTrigger>
                 <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
-                <TabsTrigger value="payments" className="hidden md:inline-flex">Payments</TabsTrigger>
-                <TabsTrigger value="history" className="hidden md:inline-flex">History</TabsTrigger>
+                <TabsTrigger value="payments">Payments</TabsTrigger>
+                 <TabsTrigger value="cancellations" className="relative">
+                    Cancellations
+                    {cancellationRequests > 0 && (
+                      <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs">
+                        {cancellationRequests}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
               </TabsList>
             ) : (
                 <div className="flex-1">
@@ -202,9 +212,16 @@ export function Dashboard() {
                     onCompleteBooking={completeBooking}
                     />
                 </TabsContent>
+                <TabsContent value="cancellations">
+                    <CancellationManagement
+                        bookings={dailyBookings}
+                        courts={courts}
+                        onUpdateBookingStatus={updateBookingStatus}
+                    />
+                </TabsContent>
                 <TabsContent value="history">
                     <HistoryManagement
-                    bookings={bookings.filter(b => b.status === 'completed')}
+                    bookings={bookings.filter(b => b.status === 'completed' || b.status === 'cancelled')}
                     courts={courts}
                     courtRates={courtRates}
                     />

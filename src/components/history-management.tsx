@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -15,6 +16,7 @@ import {
 import { Search } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 interface HistoryManagementProps {
   bookings: Booking[];
@@ -27,7 +29,7 @@ export function HistoryManagement({ bookings, courts, courtRates }: HistoryManag
 
   const completedBookings = useMemo(() => {
     return bookings
-      .filter((b) => b.status === "completed")
+      .filter((b) => b.status === "completed" || b.status === "cancelled")
       .filter(
         (b) =>
           b.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -42,6 +44,7 @@ export function HistoryManagement({ bookings, courts, courtRates }: HistoryManag
   }
 
   const calculateCost = (booking: Booking) => {
+    if (booking.status === 'cancelled') return 'N/A';
     const rate = courtRates[booking.courtId] || 0;
     const duration = booking.timeSlot.split(" & ").length;
     return (rate * duration).toFixed(0);
@@ -71,7 +74,7 @@ export function HistoryManagement({ bookings, courts, courtRates }: HistoryManag
                 <TableHead>Time Slot</TableHead>
                 <TableHead>Court</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Phone</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Amount Paid</TableHead>
               </TableRow>
             </TableHeader>
@@ -83,8 +86,14 @@ export function HistoryManagement({ bookings, courts, courtRates }: HistoryManag
                     <TableCell>{booking.timeSlot}</TableCell>
                     <TableCell>{getCourtById(booking.courtId)?.name}</TableCell>
                     <TableCell>{booking.customerName}</TableCell>
-                    <TableCell>{booking.customerPhone}</TableCell>
-                    <TableCell className="text-right font-mono">₭{calculateCost(booking)}</TableCell>
+                    <TableCell>
+                        <Badge variant={booking.status === 'cancelled' ? 'outline' : 'secondary'}>
+                           {booking.status}
+                        </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-mono">
+                        {booking.status === 'completed' ? `₭${calculateCost(booking)}` : calculateCost(booking)}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
