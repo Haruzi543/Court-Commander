@@ -47,9 +47,10 @@ const formSchema = z.object({
   customerName: z.string().min(2, { message: "Name must be at least 2 characters." }),
   customerPhone: z.string().min(1, { message: "Phone number is required." }),
 }).refine(data => {
-  const startTimeValue = data.startTime?.split(' - ')[0];
-  const endTimeValue = data.endTime?.split(' - ')[1];
-  return startTimeValue && endTimeValue && startTimeValue < endTimeValue;
+  if (!data.startTime || !data.endTime) return true; // Let individual field validation handle this
+  const startTimeValue = data.startTime.split(':')[0];
+  const endTimeValue = data.endTime.split(':')[0];
+  return parseInt(endTimeValue) > parseInt(startTimeValue);
 }, {
   message: "End time must be after the start time.",
   path: ["endTime"],
@@ -102,22 +103,19 @@ export function RangeBookingDialog({
         form.setError("courtId", { type: "manual", message: "Please select a court." });
         return;
     }
-
-    const startTimeValue = timeSlots.find(slot => slot.startsWith(startTime))?.split(' - ')[0];
-    const endTimeValue = timeSlots.find(slot => slot.endsWith(endTime))?.split(' - ')[1];
     
-    // This validation is now handled by Zod's refine, but we keep a check just in case.
-    if (!startTimeValue || !endTimeValue || startTimeValue >= endTimeValue) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Time Range",
-        description: "The end time must be after the start time.",
-      });
-      return;
+    const startIndex = timeSlots.findIndex(slot => slot.startsWith(startTime));
+    const endIndex = timeSlots.findIndex(slot => slot.endsWith(endTime));
+    
+    if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+        toast({
+            variant: "destructive",
+            title: "Invalid Time Range",
+            description: "Please ensure the start and end times are valid and in chronological order.",
+        });
+        return;
     }
 
-    const startIndex = timeSlots.findIndex(slot => slot.startsWith(startTimeValue));
-    const endIndex = timeSlots.findIndex(slot => slot.endsWith(endTimeValue));
     const selectedTimeSlots = timeSlots.slice(startIndex, endIndex + 1);
 
     const checkCourtAvailability = (court: Court) => {
@@ -160,7 +158,7 @@ export function RangeBookingDialog({
 
     toast({
       title: "Booking Confirmed!",
-      description: `${targetCourt.name} from ${startTimeValue} to ${endTimeValue} has been booked for ${customerName}.`,
+      description: `${targetCourt.name} from ${startTime} to ${endTime} has been booked for ${customerName}.`,
     });
     handleClose();
   };
@@ -300,5 +298,3 @@ export function RangeBookingDialog({
     </Dialog>
   );
 }
-
-    
