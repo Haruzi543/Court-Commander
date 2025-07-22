@@ -118,34 +118,34 @@ export function MyBookings() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Time Slot</TableHead>
-                    <TableHead>Court</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
+                    <TableHead className="px-2 py-3 text-xs md:text-sm">Date</TableHead>
+                    <TableHead className="px-2 py-3 text-xs md:text-sm">Time</TableHead>
+                    <TableHead className="px-2 py-3 text-xs md:text-sm">Court</TableHead>
+                    <TableHead className="px-2 py-3 text-xs md:text-sm">Status</TableHead>
+                    <TableHead className="text-right px-2 py-3 text-xs md:text-sm">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {myBookings.length > 0 ? (
                     myBookings.map((booking) => (
                       <TableRow key={booking.id}>
-                        <TableCell className="font-medium">
-                          {format(new Date(booking.date), "PPP")}
+                        <TableCell className="font-medium px-2 py-2 text-xs md:text-sm whitespace-nowrap">
+                          {format(new Date(booking.date), "dd/MM/yy")}
                         </TableCell>
-                        <TableCell>{booking.timeSlot}</TableCell>
-                        <TableCell>{getCourtName(booking.courtId)}</TableCell>
-                        <TableCell>
+                        <TableCell className="px-2 py-2 text-xs md:text-sm">{booking.timeSlot}</TableCell>
+                        <TableCell className="px-2 py-2 text-xs md:text-sm whitespace-nowrap">{getCourtName(booking.courtId)}</TableCell>
+                        <TableCell className="px-2 py-2">
                           <Badge
                             variant={getStatusVariant(booking.status)}
-                            className={booking.status === 'arrived' ? 'bg-primary/20 text-primary-foreground' : ''}
+                            className={`text-xs capitalize ${booking.status === 'arrived' ? 'bg-primary/20 text-primary-foreground' : ''}`}
                           >
                             {booking.status.replace('_', ' ')}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right px-2 py-2">
                           {booking.status === 'booked' && (
-                            <Button variant="destructive" size="sm" onClick={() => setCancellationRequest(booking)}>
-                              Request Cancellation
+                            <Button variant="destructive" size="sm" className="h-8 px-2 text-xs" onClick={() => setCancellationRequest(booking)}>
+                              Cancel
                             </Button>
                           )}
                         </TableCell>
