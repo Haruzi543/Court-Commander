@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Book } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Card, CardContent } from "./ui/card";
 
 interface CourtScheduleTableProps {
   bookings: Booking[];
@@ -38,6 +40,8 @@ export function CourtScheduleTable({
 }: CourtScheduleTableProps) {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<{ courtId: number; timeSlots: string[] }>({ courtId: -1, timeSlots: [] });
+  const [mobileSelectedCourtId, setMobileSelectedCourtId] = useState<string>(String(courts[0]?.id || ''));
+
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
@@ -115,6 +119,8 @@ export function CourtScheduleTable({
     )
   }
 
+  const mobileSelectedCourt = courts.find(c => c.id === Number(mobileSelectedCourtId));
+
   return (
     <>
       {/* Desktop View: Table */}
@@ -186,52 +192,60 @@ export function CourtScheduleTable({
         </Table>
       </div>
 
-      {/* Mobile View: Accordion */}
-      <div className="md:hidden">
-        <Accordion type="single" collapsible className="w-full" defaultValue={`court-${courts[0]?.id}`}>
-            {courts.map(court => (
-                <AccordionItem value={`court-${court.id}`} key={court.id}>
-                    <AccordionTrigger className="text-lg font-semibold">
-                       <div className="flex items-center gap-3">
-                         <Book className="text-primary"/> 
-                         {court.name}
-                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <div className="space-y-2">
-                          {timeSlots.map(timeSlot => {
-                              const key = `${court.id}-${timeSlot}`;
-                              const booking = getBookingForSlot(court.id, timeSlot);
-                              
-                              if (booking && booking.timeSlot.split(" & ")[0] !== timeSlot) {
-                                  return null;
-                              }
-                              
-                              if (booking) {
-                                  return (
-                                      <div key={key} className="grid grid-cols-3 items-center gap-2">
-                                          <div className="font-semibold text-base text-muted-foreground">{timeSlot}</div>
-                                          <div className="col-span-2">
-                                            {renderSlot(court, timeSlot)}
-                                          </div>
-                                      </div>
-                                  )
-                              }
-
-                              return (
-                                <div key={key} className="grid grid-cols-3 items-center gap-2">
-                                  <div className="font-semibold text-base">{timeSlot}</div>
-                                  <div className="col-span-2">
-                                    {renderSlot(court, timeSlot)}
-                                  </div>
-                                </div>
-                              )
-                          })}
+      {/* Mobile View: Dropdown */}
+      <div className="md:hidden space-y-4">
+        <Select value={mobileSelectedCourtId} onValueChange={setMobileSelectedCourtId}>
+            <SelectTrigger>
+                <SelectValue placeholder="Select a court" />
+            </SelectTrigger>
+            <SelectContent>
+                {courts.map(court => (
+                    <SelectItem key={court.id} value={String(court.id)}>
+                        <div className="flex items-center gap-3">
+                            <Book className="text-primary"/> 
+                            {court.name}
                         </div>
-                    </AccordionContent>
-                </AccordionItem>
-            ))}
-        </Accordion>
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+
+        {mobileSelectedCourt && (
+            <Card>
+                <CardContent className="pt-6">
+                    <div className="space-y-2">
+                        {timeSlots.map(timeSlot => {
+                            const key = `${mobileSelectedCourt.id}-${timeSlot}`;
+                            const booking = getBookingForSlot(mobileSelectedCourt.id, timeSlot);
+                            
+                            if (booking && booking.timeSlot.split(" & ")[0] !== timeSlot) {
+                                return null;
+                            }
+                            
+                            if (booking) {
+                                return (
+                                    <div key={key} className="grid grid-cols-3 items-center gap-2">
+                                        <div className="font-semibold text-base text-muted-foreground">{timeSlot}</div>
+                                        <div className="col-span-2">
+                                        {renderSlot(mobileSelectedCourt, timeSlot)}
+                                        </div>
+                                    </div>
+                                )
+                            }
+
+                            return (
+                            <div key={key} className="grid grid-cols-3 items-center gap-2">
+                                <div className="font-semibold text-base">{timeSlot}</div>
+                                <div className="col-span-2">
+                                {renderSlot(mobileSelectedCourt, timeSlot)}
+                                </div>
+                            </div>
+                            )
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
+        )}
       </div>
 
       {selectedSlots.courtId !== -1 && selectedSlots.timeSlots.length > 0 && courts.find(c => c.id === selectedSlots.courtId) && (
@@ -247,3 +261,4 @@ export function CourtScheduleTable({
     </>
   );
 }
+
