@@ -68,7 +68,6 @@ export function CancellationManagement({ bookings, courts, onUpdateBookingStatus
         await sendCancellationStatusEmail({ booking, court, status: 'rejected' });
         onUpdateBookingStatus(booking.id, 'booked');
         toast({
-          variant: "destructive",
           title: "Cancellation Rejected",
           description: `Booking for ${booking.customerName} has been reinstated. An email has been sent.`
         });
