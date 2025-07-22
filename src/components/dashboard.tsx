@@ -78,13 +78,13 @@ export function Dashboard() {
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <Logo className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl md:text-2xl font-bold tracking-tight">Court Commander</h1>
+            <Logo className="h-6 w-6 text-primary" />
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight">Court Commander</h1>
             {isAdmin && <span className="text-sm text-muted-foreground mt-1 hidden md:inline">({user.email} - {user.role})</span>}
           </div>
           <div className="flex items-center gap-2">
             {!isAdmin && (
-                <Button variant="outline" asChild>
+                <Button variant="outline" size="sm" asChild>
                     <Link href="/my-bookings">
                         <Ticket className="mr-2 h-4 w-4" />
                         My Bookings
@@ -93,18 +93,18 @@ export function Dashboard() {
             )}
              <Button variant="outline" size="icon" asChild>
                 <Link href="/profile">
-                    <UserIcon className="h-5 w-5" />
+                    <UserIcon className="h-4 w-4" />
                     <span className="sr-only">Profile</span>
                 </Link>
              </Button>
             {isAdmin && (
               <Button variant="outline" size="icon" onClick={() => setIsSettingsOpen(true)}>
-                <Settings className="h-5 w-5" />
+                <Settings className="h-4 w-4" />
                 <span className="sr-only">Settings</span>
               </Button>
             )}
             <Button variant="outline" size="icon" onClick={logout}>
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4" />
                 <span className="sr-only">Log Out</span>
             </Button>
           </div>
@@ -141,7 +141,7 @@ export function Dashboard() {
                 <Button
                   variant={"outline"}
                   className={cn(
-                    "w-full justify-start text-left font-normal md:w-[280px]",
+                    "w-full justify-start text-left font-normal md:w-[240px]",
                     !selectedDate && "text-muted-foreground"
                   )}
                 >

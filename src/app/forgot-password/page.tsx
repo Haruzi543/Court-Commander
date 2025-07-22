@@ -106,11 +106,11 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-3 mb-2">
-            <Logo className="h-10 w-10 text-primary" />
-            <CardTitle className="text-3xl md:text-3xl">Forgot Password</CardTitle>
+            <Logo className="h-8 w-8 text-primary" />
+            <CardTitle className="text-2xl">Forgot Password</CardTitle>
           </div>
           <CardDescription>
             {step === 1 ? "Enter your email to receive a reset code." : "Enter the OTP and your new password."}
