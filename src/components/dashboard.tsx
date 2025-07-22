@@ -185,7 +185,7 @@ export function Dashboard() {
               </CardHeader>
               <CardContent>
                 <CourtScheduleTable
-                  bookings={dailyBookings.filter(b => b.status === 'booked' || b.status === 'arrived')}
+                  bookings={dailyBookings.filter(b => b.status === 'booked' || b.status === 'arrived' || b.status === 'cancellation_requested')}
                   courts={courts}
                   timeSlots={timeSlots}
                   onBookSlot={addBooking}

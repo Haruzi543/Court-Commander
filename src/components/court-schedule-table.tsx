@@ -25,7 +25,7 @@ interface CourtScheduleTableProps {
   timeSlots: string[];
   onBookSlot: (booking: Omit<Booking, "id" | "status">) => void;
   selectedDate: string;
-  onNavigateToTab: (tab: "arrivals" | "payments" | "history" | "schedule") => void;
+  onNavigateToTab: (tab: "arrivals" | "payments" | "history" | "schedule" | "cancellations") => void;
 }
 
 export function CourtScheduleTable({
@@ -58,6 +58,8 @@ export function CourtScheduleTable({
       onNavigateToTab('arrivals');
     } else if (booking.status === 'arrived') {
       onNavigateToTab('payments');
+    } else if (booking.status === 'cancellation_requested') {
+      onNavigateToTab('cancellations');
     }
   }
 
@@ -83,6 +85,7 @@ export function CourtScheduleTable({
                     "flex h-full w-full flex-col items-center justify-center rounded-md p-2 text-center min-h-[50px]",
                     booking.status === 'booked' && "bg-accent/20 text-accent-foreground",
                     booking.status === 'arrived' && "bg-primary/20 text-primary-foreground",
+                    booking.status === 'cancellation_requested' && "bg-destructive/20 text-destructive-foreground",
                     isAdmin ? "cursor-pointer" : "cursor-not-allowed"
                 )}
                 style={{ gridRow: `span ${duration}` }}
@@ -91,7 +94,7 @@ export function CourtScheduleTable({
                 {isAdmin ? (
                     <>
                         <p className="font-semibold">{booking.customerName}</p>
-                        <Badge variant="secondary" className="mt-1">{booking.status}</Badge>
+                        <Badge variant="secondary" className="mt-1">{booking.status.replace('_', ' ')}</Badge>
                     </>
                 ) : (
                     <p className="font-semibold text-transparent select-none">Booked</p>
@@ -146,6 +149,7 @@ export function CourtScheduleTable({
                             "flex h-full w-full flex-col items-center justify-center rounded-md p-2 text-center min-h-[50px]",
                             booking.status === 'booked' && "bg-accent/20 text-accent-foreground",
                             booking.status === 'arrived' && "bg-primary/20 text-primary-foreground",
+                            booking.status === 'cancellation_requested' && "bg-destructive/20 text-destructive-foreground",
                             isAdmin ? "cursor-pointer" : "cursor-not-allowed"
                           )}
                           onClick={() => handleBookingClick(booking)}
@@ -153,7 +157,7 @@ export function CourtScheduleTable({
                           {isAdmin ? (
                             <>
                               <p className="font-semibold">{booking.customerName}</p>
-                              <Badge variant="secondary" className="mt-1">{booking.status}</Badge>
+                              <Badge variant="secondary" className="mt-1">{booking.status.replace('_', ' ')}</Badge>
                             </>
                           ) : (
                             <p className="font-semibold text-transparent select-none">Booked</p>

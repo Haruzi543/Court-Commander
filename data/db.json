@@ -7,7 +7,7 @@
       "customerName": "Test User",
       "customerPhone": "55526477",
       "id": "2025-07-21T20:35:25.957Z0.49179268890952854",
-      "status": "booked"
+      "status": "cancellation_requested"
     },
     {
       "courtId": 2,
