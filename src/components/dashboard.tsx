@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { DashboardOverview } from "./dashboard-overview";
 import { useAuth } from "@/context/auth-context";
 import Link from "next/link";
+import { ScrollArea } from "./ui/scroll-area";
 
 export function Dashboard() {
   const { user, logout } = useAuth();
@@ -79,10 +80,10 @@ export function Dashboard() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Logo className="h-6 w-6 text-primary" />
-            <h1 className="text-lg md:text-2xl font-bold tracking-tight">Court Commander</h1>
+            <h1 className="text-lg md:text-xl font-bold tracking-tight">Court Commander</h1>
             {isAdmin && <span className="text-xs text-muted-foreground mt-1 hidden md:inline">({user.email} - {user.role})</span>}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             {!isAdmin && (
                 <Button variant="outline" size="sm" asChild>
                     <Link href="/my-bookings">
@@ -115,21 +116,23 @@ export function Dashboard() {
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             {isAdmin ? (
-               <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 md:w-auto">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
-                <TabsTrigger value="payments">Payments</TabsTrigger>
-                 <TabsTrigger value="cancellations" className="relative">
-                    Cancellations
-                    {cancellationRequests > 0 && (
-                      <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs">
-                        {cancellationRequests}
-                      </span>
-                    )}
-                  </TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
-              </TabsList>
+               <ScrollArea className="w-full md:w-auto">
+                <TabsList className="w-max">
+                    <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                    <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                    <TabsTrigger value="arrivals">Arrivals</TabsTrigger>
+                    <TabsTrigger value="payments">Payments</TabsTrigger>
+                    <TabsTrigger value="cancellations" className="relative">
+                        Cancellations
+                        {cancellationRequests > 0 && (
+                        <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs">
+                            {cancellationRequests}
+                        </span>
+                        )}
+                    </TabsTrigger>
+                    <TabsTrigger value="history">History</TabsTrigger>
+                </TabsList>
+               </ScrollArea>
             ) : (
                 <div className="flex-1">
                     <h2 className="text-xl font-semibold">Booking Schedule</h2>
@@ -251,3 +254,5 @@ export function Dashboard() {
     </div>
   );
 }
+
+    
