@@ -79,7 +79,7 @@ export function Dashboard() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Logo className="h-8 w-8 text-primary" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight">Court Commander</h1>
+            <h1 className="text-2xl md:text-2xl font-bold tracking-tight">Court Commander</h1>
             {isAdmin && <span className="text-sm text-muted-foreground mt-1 hidden md:inline">({user.email} - {user.role})</span>}
           </div>
           <div className="flex items-center gap-2">
