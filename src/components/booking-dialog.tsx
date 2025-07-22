@@ -57,6 +57,13 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
   });
   
   const isUser = user?.role === 'user';
+  
+  const handleClose = () => {
+    form.reset();
+    setShowConfirm(false);
+    setCountdown(60);
+    onClose();
+  };
 
   useEffect(() => {
     if (isOpen && user) {
@@ -107,13 +114,6 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
     }
   };
   
-  const handleClose = () => {
-    form.reset();
-    setShowConfirm(false);
-    setCountdown(60);
-    onClose();
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">

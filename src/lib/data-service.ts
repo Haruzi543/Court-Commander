@@ -148,13 +148,12 @@ export async function updateUserPassword(email: string, newPassword: string): Pr
 export async function addBooking(newBookingData: Omit<Booking, 'id' | 'status'>): Promise<Booking> {
   const data = await readData();
 
-  // Check for conflicts before adding the new booking
   const newBookingSlots = newBookingData.timeSlot.split(" & ");
   const isConflict = data.bookings.some(booking => {
-    if (booking.courtId !== newBookingData.courtId || booking.date !== newBookingData.date || booking.status === 'cancelled') {
-      return false; // Not the same court/date or the existing booking is cancelled, so no conflict
+    // A conflict exists if a booking for the same court on the same day is NOT cancelled and shares a timeslot.
+    if (booking.courtId !== newBookingData.courtId || booking.date !== newBookingData.date || booking.status === 'cancelled' || booking.status === 'completed') {
+      return false; 
     }
-    // Booking is for the same court on the same day, check for time overlap
     const existingBookingSlots = booking.timeSlot.split(" & ");
     return newBookingSlots.some(newSlot => existingBookingSlots.includes(newSlot));
   });

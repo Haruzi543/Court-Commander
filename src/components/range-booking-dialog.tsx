@@ -91,6 +91,7 @@ export function RangeBookingDialog({
     setShowConfirm(false);
     setCountdown(60);
     setBookingDetails(null);
+    setAutoFindCourt(true);
     onClose();
   }, [form, onClose]);
 
@@ -100,13 +101,9 @@ export function RangeBookingDialog({
         courtId: "",
         startTime: "",
         endTime: "",
-        customerName: isUser ? `${user.firstName} ${user.lastName}` : "",
-        customerPhone: isUser ? user.phone : "",
+        customerName: isUser ? `${user?.firstName} ${user?.lastName}` : "",
+        customerPhone: isUser ? user?.phone : "",
       });
-      setAutoFindCourt(true);
-      setShowConfirm(false);
-      setCountdown(60);
-      setBookingDetails(null);
     }
   }, [isOpen, user, isUser, form]);
 
@@ -131,13 +128,22 @@ export function RangeBookingDialog({
     const { courtId, startTime, endTime, customerName, customerPhone } = bookingDetails;
     
     if (!autoFindCourt && !courtId) {
-        form.setError("courtId", { type: "manual", message: "Please select a court." });
+        toast({
+            variant: "destructive",
+            title: "Court Not Selected",
+            description: "Please select a court or enable automatic finding."
+        })
         return;
     }
     
     const startIndex = timeSlots.findIndex(slot => slot.startsWith(startTime));
     const endIndex = timeSlots.findIndex(slot => slot.endsWith(endTime));
     
+    if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+        toast({ variant: "destructive", title: "Invalid Time Range", description: "Please check your start and end times."});
+        return;
+    }
+
     const selectedTimeSlots = timeSlots.slice(startIndex, endIndex + 1);
 
     const checkCourtAvailability = (court: Court) => {
@@ -168,6 +174,7 @@ export function RangeBookingDialog({
               : "The selected court is not available for this time range. Please try another court or time.",
         });
         setShowConfirm(false); // Go back to the form
+        setBookingDetails(null);
         return;
     }
 
@@ -192,14 +199,13 @@ export function RangeBookingDialog({
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    setBookingDetails(values);
     if (isUser) {
-        setBookingDetails(values);
         setShowConfirm(true);
         setCountdown(60);
     } else {
-        // For admin, we use bookingDetails state to pass data to handleConfirmBooking
-        setBookingDetails(values); 
-        // We need to use a timeout to allow state to update before calling confirm
+        // Admin booking is confirmed immediately after state update
+        // Use a timeout of 0 to ensure the state update is processed before confirmation.
         setTimeout(() => handleConfirmBooking(), 0);
     }
   };
