@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { sendCancellationStatusEmail } from "@/ai/flows/send-cancellation-status-flow";
 
 interface CancellationManagementProps {
   bookings: Booking[];
@@ -28,27 +29,52 @@ export function CancellationManagement({ bookings, courts, onUpdateBookingStatus
     return courts.find(c => c.id === courtId)?.name || "Unknown";
   }
 
+  const getCourtById = (courtId: number) => {
+    return courts.find(c => c.id === courtId);
+  }
+
   const cancellationRequests = useMemo(() => {
     return bookings
       .filter((b) => b.status === "cancellation_requested")
       .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
   }, [bookings]);
   
-  const handleApprove = (booking: Booking) => {
-    onUpdateBookingStatus(booking.id, 'cancelled');
-    toast({
-      title: "Cancellation Approved",
-      description: `Booking for ${booking.customerName} has been cancelled.`
-    })
+  const handleApprove = async (booking: Booking) => {
+    const court = getCourtById(booking.courtId);
+    if (!court) {
+        toast({ variant: "destructive", title: "Error", description: "Court details not found." });
+        return;
+    }
+
+    try {
+        await sendCancellationStatusEmail({ booking, court, status: 'approved' });
+        onUpdateBookingStatus(booking.id, 'cancelled');
+        toast({
+          title: "Cancellation Approved",
+          description: `Booking for ${booking.customerName} has been cancelled. An email has been sent.`
+        });
+    } catch(e) {
+        toast({ variant: "destructive", title: "Email Failed", description: (e as Error).message });
+    }
   }
 
-  const handleReject = (booking: Booking) => {
-    onUpdateBookingStatus(booking.id, 'booked');
-    toast({
-      variant: "destructive",
-      title: "Cancellation Rejected",
-      description: `Booking for ${booking.customerName} has been reinstated.`
-    })
+  const handleReject = async (booking: Booking) => {
+    const court = getCourtById(booking.courtId);
+    if (!court) {
+        toast({ variant: "destructive", title: "Error", description: "Court details not found." });
+        return;
+    }
+    try {
+        await sendCancellationStatusEmail({ booking, court, status: 'rejected' });
+        onUpdateBookingStatus(booking.id, 'booked');
+        toast({
+          variant: "destructive",
+          title: "Cancellation Rejected",
+          description: `Booking for ${booking.customerName} has been reinstated. An email has been sent.`
+        });
+    } catch(e) {
+        toast({ variant: "destructive", title: "Email Failed", description: (e as Error).message });
+    }
   }
 
   return (

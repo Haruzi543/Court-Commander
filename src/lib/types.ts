@@ -11,6 +11,7 @@ export interface Booking {
   timeSlot: string;
   customerName: string;
   customerPhone: string;
+  userEmail: string; // Added to notify user
   status: "booked" | "arrived" | "completed" | "cancellation_requested" | "cancelled";
 }
 

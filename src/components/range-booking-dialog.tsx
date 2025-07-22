@@ -148,12 +148,18 @@ export function RangeBookingDialog({
         return;
     }
 
+    if (!user?.email) {
+      toast({ variant: "destructive", title: "Authentication Error", description: "Could not identify user." });
+      return;
+    }
+
     onBook({
       courtId: targetCourt.id,
       date: selectedDate,
       timeSlot: selectedTimeSlots.join(" & "),
       customerName,
       customerPhone,
+      userEmail: user.email,
     });
 
     toast({

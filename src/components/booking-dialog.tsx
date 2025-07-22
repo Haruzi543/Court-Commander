@@ -89,10 +89,15 @@ export function BookingDialog({ isOpen, onClose, court, timeSlot, selectedDate, 
         }
       });
     } else {
+      if (!user?.email) {
+        toast({ variant: "destructive", title: "Authentication Error", description: "Could not identify user."});
+        return;
+      }
       onBook({
         courtId: court.id,
         date: selectedDate,
         timeSlot,
+        userEmail: user.email,
         ...values,
       });
       toast({
