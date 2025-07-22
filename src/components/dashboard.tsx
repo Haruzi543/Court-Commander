@@ -79,8 +79,8 @@ export function Dashboard() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Logo className="h-6 w-6 text-primary" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight">Court Commander</h1>
-            {isAdmin && <span className="text-sm text-muted-foreground mt-1 hidden md:inline">({user.email} - {user.role})</span>}
+            <h1 className="text-lg md:text-2xl font-bold tracking-tight">Court Commander</h1>
+            {isAdmin && <span className="text-xs text-muted-foreground mt-1 hidden md:inline">({user.email} - {user.role})</span>}
           </div>
           <div className="flex items-center gap-2">
             {!isAdmin && (
@@ -132,8 +132,8 @@ export function Dashboard() {
               </TabsList>
             ) : (
                 <div className="flex-1">
-                    <h2 className="text-2xl font-semibold">Booking Schedule</h2>
-                    <p className="text-muted-foreground">Select a date and click an available time slot to book a court.</p>
+                    <h2 className="text-xl font-semibold">Booking Schedule</h2>
+                    <p className="text-muted-foreground text-sm">Select a date and click an available time slot to book a court.</p>
                 </div>
             )}
             <Popover>
@@ -174,7 +174,7 @@ export function Dashboard() {
             <Card>
               <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <CardTitle>Schedule for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
+                  <CardTitle className="text-xl md:text-2xl">Schedule for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
                    {!isAdmin && <CardDescription>Welcome, {user.firstName}! Select a slot to start.</CardDescription>}
                    {isAdmin && <CardDescription>Click an available time slot on the grid to book it.</CardDescription>}
                 </div>

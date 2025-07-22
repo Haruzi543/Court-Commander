@@ -22,7 +22,7 @@ const StatCard = ({ title, value, icon: Icon }: { title: string; value: string |
       <Icon className="h-4 w-4 text-muted-foreground" />
     </CardHeader>
     <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-xl md:text-2xl font-bold">{value}</div>
     </CardContent>
   </Card>
 );
@@ -80,7 +80,7 @@ export function DashboardOverview({ bookings, courts, courtRates, selectedDate }
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Daily Overview for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
+          <CardTitle className="text-xl md:text-2xl">Daily Overview for {format(selectedDate, "MMMM d, yyyy")}</CardTitle>
         </CardHeader>
         <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -94,19 +94,20 @@ export function DashboardOverview({ bookings, courts, courtRates, selectedDate }
       <div className="grid gap-6 md:grid-cols-2">
          <Card>
             <CardHeader>
-                <CardTitle>Court Utilization</CardTitle>
+                <CardTitle className="text-lg md:text-xl">Court Utilization</CardTitle>
             </CardHeader>
             <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={courtUtilizationData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis allowDecimals={false} />
+                        <XAxis dataKey="name" fontSize={12} />
+                        <YAxis allowDecimals={false} fontSize={12} />
                         <Tooltip
                             contentStyle={{
                                 background: "hsl(var(--background))",
                                 border: "1px solid hsl(var(--border))",
                                 borderRadius: "var(--radius)",
+                                fontSize: "12px",
                             }}
                         />
                         <Bar dataKey="hours" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Booked Hours" />
@@ -116,29 +117,29 @@ export function DashboardOverview({ bookings, courts, courtRates, selectedDate }
         </Card>
         <Card>
             <CardHeader>
-                <CardTitle>Upcoming Arrivals</CardTitle>
+                <CardTitle className="text-lg md:text-xl">Upcoming Arrivals</CardTitle>
             </CardHeader>
             <CardContent>
                 {upcomingBookings.length > 0 ? (
-                    <ul className="space-y-4">
+                    <ul className="space-y-3">
                     {upcomingBookings.map((booking) => (
                     <li key={booking.id} className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <Clock className="h-5 w-5 text-muted-foreground" />
                             <div>
-                                <p className="font-semibold">{booking.customerName}</p>
-                                <p className="text-sm text-muted-foreground">{booking.customerPhone}</p>
+                                <p className="font-semibold text-sm">{booking.customerName}</p>
+                                <p className="text-xs text-muted-foreground">{booking.customerPhone}</p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="font-mono font-medium">{booking.timeSlot.split(' & ')[0].split(' - ')[0]}</p>
-                            <p className="text-sm text-muted-foreground">Court {booking.courtId}</p>
+                            <p className="font-mono font-medium text-sm">{booking.timeSlot.split(' & ')[0].split(' - ')[0]}</p>
+                            <p className="text-xs text-muted-foreground">Court {booking.courtId}</p>
                         </div>
                     </li>
                     ))}
                 </ul>
                 ) : (
-                    <div className="flex items-center justify-center h-full text-center py-10 text-muted-foreground">
+                    <div className="flex items-center justify-center h-full text-center py-10 text-muted-foreground text-sm">
                         No upcoming arrivals for the selected date.
                     </div>
                 )}
